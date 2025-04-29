@@ -24,10 +24,5 @@ try {
 }
 
 export default {
-  ...env,
-  SMTP_HOST: 'smtp.gmail.com',
-  SMTP_PORT: 587,
-  SMTP_USERNAME: '',
-  SMTP_PASSWORD: '',
-  FROM_EMAIL: '',
+  env,
 };

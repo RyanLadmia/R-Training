@@ -1,10 +1,12 @@
 import { Routes, Route } from 'react-router-dom'
 import Home from './page/home'
+import Header from './layout/header'
+
 
 function App() {
   return (
     <div className="app">
-      {/* Ici vous pourriez ajouter un Header global, une barre de navigation, etc. */}
+      <Header />
       
       <main className="content">
         <Routes>
