@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import Home from './page/home'
 import Header from './layout/header'
+import ExercisesList from './page/exercises-list'
 
 
 function App() {
@@ -12,7 +13,7 @@ function App() {
         <Routes>
           {/* Route principale */}
           <Route path="/" element={<Home />} />
-          
+          <Route path="/exercises" element={<ExercisesList />} />
           {/* Futures routes */}
           {/* 
           <Route path="/auth">
