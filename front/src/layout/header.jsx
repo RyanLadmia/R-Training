@@ -1,3 +1,6 @@
+/*Header*/
+'use client'
+
 import { Button } from '@/components/ui/button'
 import { Flag, LogOut } from 'lucide-react'
 
@@ -16,7 +19,6 @@ export default function Header() {
     <div className='bg-blue-950 fixed top-0 w-full text-white h-[60px] flex items-center px-2 justify-between '>
       <div  >
         <a href='/' className='flex items-center gap-2'>
-        <Flag />
         Accueil
         </a>
       </div>
