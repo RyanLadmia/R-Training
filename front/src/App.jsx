@@ -1,6 +1,8 @@
 import { Routes, Route } from 'react-router-dom'
-import Home from './page/home'
 import Header from './layout/header'
+import Home from './page/home'
+import Login from './page/login'
+import Register from './page/register'
 import ExercisesList from './page/exercises-list'
 
 
@@ -15,12 +17,11 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/exercises" element={<ExercisesList />} />
           {/* Futures routes */}
-          {/* 
           <Route path="/auth">
             <Route path="login" element={<Login />} />
             <Route path="register" element={<Register />} />
           </Route>
-          
+          {/*
           <Route path="/profile" element={<Profile />} />
           */}
         </Routes>
