@@ -2,7 +2,7 @@ import instance from './config';
 
 async function signIn(data) {
     try {
-        const response = await instance.post('/api/login', data);
+        const response = await instance.post('/login', data);
         if (response.status !== 200 || !response.data.token) {
             throw new Error('Failed to sign in');
         }
@@ -18,7 +18,7 @@ async function signIn(data) {
 async function signUp(data) {
     try {
         console.log("Data to be inserted:", data);
-        const response = await instance.post("/api/register", data);
+        const response = await instance.post("/register", data);
         console.log("Response from database insert:", response.data);
         return response.data;
     } catch (error) {

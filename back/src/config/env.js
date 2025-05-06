@@ -30,6 +30,9 @@ const envSchema = z.object({
     JWT_SECRET: z.string().min(32, "JWT_SECRET doit contenir au moins 32 caractères"),
     JWT_EXPIRES_IN: z.coerce.number().default(60 * 24),
     
+    // Configuration Base de données
+    DATABASE_URL: z.string().url("L'URL de la base de données doit être une URL valide"),
+    
     // Configuration SMTP
     SMTP_HOST: z.string(),
     SMTP_PORT: z.coerce.number(),

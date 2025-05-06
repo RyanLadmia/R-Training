@@ -6,13 +6,9 @@
       "componentStyle": "function"
     },
     "constraints": [
-      "no inline styles",
-      "prefer async/await over callbacks",
-      "use Prisma for database access",
       "use Gitbash for terminal",
-      "don't modify or delete .env file",
       "don't modify or delete .gitignore file",
-      "always give me an clear explaination of the code I write or you modify"
+      "always give me an clear explaination of the code you write or you modify"
     ]
   }
   

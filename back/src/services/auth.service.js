@@ -76,12 +76,12 @@ async function register(data) {
         }
 
         // Vérifier si le rôle existe
-        const userRole = await prisma.role.findUnique({
-            where: { id: 3 }
+        const userRole = await prisma.role.findFirst({
+            where: { name: 'user' }
         });
 
         if (!userRole) {
-            throw new Error('Role user not found');
+            throw new Error('Le rôle utilisateur n\'existe pas. Veuillez contacter l\'administrateur.');
         }
 
         // Générer le token de vérification
@@ -111,7 +111,7 @@ async function register(data) {
         await prisma.userRole.create({
             data: {
                 userId: user.id,
-                roleId: 3 // ID 3 correspond au rôle 'user'
+                roleId: userRole.id // Utilisation de l'ID du rôle trouvé
             }
         });
         
