@@ -1,68 +1,18 @@
 import { prisma } from '../config/prisma.js';
-import jwt from 'jsonwebtoken';
 import env from '../config/env.js'
 import { comparePassword, hashPassword } from '../utils/password.js';
 import { sendVerificationEmail as sendVerificationEmailUtil } from '../utils/email.js';
-
-
-// Générer un token JWT
-function generateToken(payload) {
-    if (!process.env.JWT_SECRET) {
-        throw new Error('JWT_SECRET n\'est pas défini dans les variables d\'environnement');
-    }
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h'});
-    return { token };
-}
-
-// Vérifier un token JWT    
-function verifyToken(token) {
-    if (!process.env.JWT_SECRET) {
-        throw new Error('JWT_SECRET n\'est pas défini dans les variables d\'environnement');
-    }
-    return jwt.verify(token, process.env.JWT_SECRET);
-}
-
-
-
-// Générer un token de réinitialisation de mot de passe
-function generateResetToken(payload) {
-    if (!process.env.JWT_SECRET) {
-        throw new Error('JWT_SECRET n\'est pas défini dans les variables d\'environnement');
-    }
-    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h'});
-}
-
-// Vérifier un token de réinitialisation de mot de passe
-function verifyResetToken(token) {
-    if (!process.env.JWT_SECRET) {
-        throw new Error('JWT_SECRET n\'est pas défini dans les variables d\'environnement');
-    }
-    return jwt.verify(token, process.env.JWT_SECRET);
-}
-
-
-// Générer un token de vérification d'email
-function generateVerificationToken(payload) {
-    if (!process.env.JWT_SECRET) {
-        throw new Error('JWT_SECRET n\'est pas défini dans les variables d\'environnement');
-    }
-    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '24h'});
-}
-
-// Vérifier un token de vérification d'email
-function verifyVerificationToken(token) {
-    if (!process.env.JWT_SECRET) {
-        throw new Error('JWT_SECRET n\'est pas défini dans les variables d\'environnement');
-    }
-    return jwt.verify(token, process.env.JWT_SECRET);
-}
-
-
-
+import { formatDate, formatDateTime } from '../utils/date.js';
+import { 
+    generateAuthTokens,
+    generateEmailVerificationToken,
+    generatePasswordResetToken,
+    verifyToken
+} from '../utils/jwt.js';
 
 // Enregistrer un nouvel utilisateur
 async function register(data) {
-    const { firstname, lastname, email, password } = data;
+    const { firstname, lastname, email, password, birthDate, phoneNumber } = data;
     console.log("Service - Données reçues:", data);
 
     try {
@@ -85,7 +35,7 @@ async function register(data) {
         }
 
         // Générer le token de vérification
-        const emailVerificationToken = generateVerificationToken({ email });
+        const emailVerificationToken = generateEmailVerificationToken(email);
 
         // Hacher le mot de passe
         const hashedPassword = await hashPassword(password);
@@ -97,6 +47,8 @@ async function register(data) {
                 lastname,
                 email,
                 password: hashedPassword,
+                birthDate: birthDate ? new Date(birthDate) : undefined,
+                phoneNumber,
                 isVerified: false,
                 emailVerificationToken
             }
@@ -107,7 +59,7 @@ async function register(data) {
         await prisma.userRole.create({
             data: {
                 userId: user.id,
-                roleId: userRole.id // Utilisation de l'ID du rôle trouvé
+                roleId: userRole.id
             }
         });
         
@@ -119,7 +71,6 @@ async function register(data) {
             console.log("Service - Email envoyé");
         } catch (emailError) {
             console.error("Service - Erreur envoi email:", emailError);
-            // Continuons même si l'email n'a pas pu être envoyé
         }
 
         return {
@@ -127,7 +78,9 @@ async function register(data) {
                 id: user.id,
                 firstname: user.firstname,
                 lastname: user.lastname,
-                email: user.email
+                email: user.email,
+                birthDate: user.birthDate ? formatDate(user.birthDate) : null,
+                phoneNumber: user.phoneNumber
             },
             message: "Inscription réussie. Veuillez vérifier votre email pour activer votre compte."
         };
@@ -139,7 +92,6 @@ async function register(data) {
 
 // Connexion d'un utilisateur
 async function login(email, password) {
-    // Vérifier si l'utilisateur existe
     const user = await prisma.user.findUnique({
         where: { email },
         include: {
@@ -155,23 +107,16 @@ async function login(email, password) {
         throw new Error('Email ou mot de passe incorrect');
     }
 
-    // Vérifier le mot de passe
     const isPasswordValid = await comparePassword(password, user.password);
     if (!isPasswordValid) {
         throw new Error('Email ou mot de passe incorrect');
     }
 
-    // Vérifier si l'email est vérifié
     if (!user.isVerified) {
         throw new Error('Veuillez vérifier votre email avant de vous connecter');
     }
 
-    // Générer des tokens JWT
-    const tokens = await generateToken({
-        id: user.id,
-        email: user.email,
-        role: user.role?.role?.name || 'USER'
-    });
+    const tokens = generateAuthTokens(user);
 
     return {
         user: {
@@ -185,15 +130,65 @@ async function login(email, password) {
     };
 }
 
+// Vérifier l'email d'un utilisateur
+async function verifyEmail(token) {
+    try {
+        // Vérifier le token et son type
+        const decoded = verifyToken(token, 'email');
+
+        // Trouver l'utilisateur avec l'email du token
+        const user = await prisma.user.findUnique({
+            where: { 
+                email: decoded.email,
+                emailVerificationToken: token
+            }
+        });
+
+        if (!user) {
+            throw new Error('Token de vérification invalide ou expiré');
+        }
+
+        if (user.isVerified) {
+            return { message: 'Email déjà vérifié' };
+        }
+
+        // Mettre à jour l'utilisateur
+        await prisma.user.update({
+            where: { id: user.id },
+            data: { 
+                isVerified: true,
+                emailVerificationToken: null
+            }
+        });
+
+        return { message: 'Email vérifié avec succès' };
+    } catch (error) {
+        console.error('Erreur de vérification:', error);
+        throw new Error(error.message || 'Erreur lors de la vérification de l\'email');
+    }
+}
 
 // Mot de passe oublié
 async function forgotPassword(email) {
-    // Vérifier si l'utilisateur existe
     const user = await prisma.user.findUnique({
         where: { email }
     });
-}
 
+    if (!user) {
+        throw new Error('Aucun compte associé à cet email');
+    }
+
+    const resetToken = generatePasswordResetToken(email);
+
+    // Sauvegarder uniquement le token
+    await prisma.user.update({
+        where: { id: user.id },
+        data: { resetPasswordToken: resetToken }
+    });
+
+    // TODO: Envoyer l'email avec le lien de réinitialisation
+    return { message: 'Instructions envoyées par email' };
+}
 
 // Récupérer un utilisateur par son id
 async function getUserById(id) {
@@ -202,22 +197,31 @@ async function getUserById(id) {
     });
 }
 
-
 // Récupérer le profile d'un utilisateur
 async function getUserProfile(id) {
-    return await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
         where: { id },
         select: {
             id: true,
             firstname: true,
             lastname: true,
             email: true,
+            birthDate: true,
+            phoneNumber: true,
             createdAt: true,
             updatedAt: true
         }
-    })
-}
+    });
 
+    if (!user) return null;
+
+    return {
+        ...user,
+        birthDate: user.birthDate ? formatDate(user.birthDate) : null,
+        createdAt: formatDateTime(user.createdAt),
+        updatedAt: formatDateTime(user.updatedAt)
+    };
+}
 
 // Modifier le profile d'un utilisateur
 async function updateUser(id, data) {
@@ -227,7 +231,6 @@ async function updateUser(id, data) {
     });
 }
 
-
 // Envoyer un email de vérification
 async function sendEmailVerification(email) {
     // Vérifier si l'utilisateur existe
@@ -236,7 +239,7 @@ async function sendEmailVerification(email) {
         throw new Error('Utilisateur non trouvé');
     }
     
-    const token = generateVerificationToken({ email });
+    const token = generateEmailVerificationToken(email);
     const verificationLink = `${env.APP_URL}/verify-email?token=${token}`;
     
     // Envoyer l'email de vérification
@@ -252,48 +255,14 @@ async function findUserByEmail(email) {
     });
 }
 
-// Vérifier l'email d'un utilisateur
-async function verifyEmail(token) {
-    try {
-        // D'abord vérifier si le token est valide
-        let decoded;
-        try {
-            decoded = jwt.verify(token, process.env.JWT_SECRET);
-        } catch (error) {
-            throw new Error('Token de vérification invalide ou expiré');
-        }
-
-        // Trouver l'utilisateur avec l'email du token
-        const user = await prisma.user.findUnique({
-            where: { 
-                email: decoded.email,
-                emailVerificationToken: token
-            }
-        });
-
-        if (!user) {
-            throw new Error('Token de vérification invalide ou expiré');
-        }
-
-        // Vérifier si l'email est déjà vérifié
-        if (user.isVerified) {
-            return { message: 'Email déjà vérifié' };
-        }
-
-        // Mettre à jour l'utilisateur
-        await prisma.user.update({
-            where: { id: user.id },
-            data: { 
-                isVerified: true,
-                emailVerificationToken: null // Effacer le token après utilisation
-            }
-        });
-
-        return { message: 'Email vérifié avec succès' };
-    } catch (error) {
-        console.error('Erreur de vérification:', error);
-        throw new Error(error.message || 'Erreur lors de la vérification de l\'email');
-    }
-}
-
-export default { register, login, forgotPassword, getUserById, getUserProfile, updateUser, sendEmailVerification, findUserByEmail, verifyEmail };
+export default { 
+    register, 
+    login, 
+    forgotPassword, 
+    getUserById, 
+    getUserProfile, 
+    updateUser, 
+    sendEmailVerification, 
+    findUserByEmail, 
+    verifyEmail 
+};

@@ -26,10 +26,17 @@ authRoutes.post(
                 .min(10, "Le mot de passe doit contenir au moins 10 caractères")
                 .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/,
                     "Le mot de passe doit contenir une majuscule, une minuscule et un chiffre."),
-            confirmPassword: z.string()
+            confirmPassword: z.string(),
+            birthDate: z.string()
+                .regex(/^\d{4}-\d{2}-\d{2}$/, "Format de date invalide (AAAA-MM-JJ)")
+                .optional(),
+            phoneNumber: z.string()
+                .regex(/^(0[67][0-9]{8}|\+33[67][0-9]{8})$/, "Le numéro doit commencer par 06/07 ou +336/+337 et contenir 9 chiffres après le préfixe")
+                .optional()
+              
         }).refine((data) => data.password === data.confirmPassword, {
             message: "Les mots de passe ne correspondent pas",
-            path: ["confirmPassword"] // L'erreur s'affiche sur le champs confirmPassword
+            path: ["confirmPassword"]
         })
     ),
     register

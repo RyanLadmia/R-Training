@@ -1,220 +1,287 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+'use client'
 
-const RegisterForm = () => {
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState({
+import { useState } from 'react'
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Link } from 'react-router-dom'
+
+export default function RegisterForm({ onRegister, isPending }) {
+  const [firstname, setFirstname] = useState("")
+  const [lastname, setLastname] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [birthDate, setBirthDate] = useState('')
+  const [phoneNumber, setPhoneNumber] = useState('')
+  const [errors, setErrors] = useState({
+    firstname: '',
+    lastname: '',
     email: '',
     password: '',
     confirmPassword: '',
-    firstname: '',
-    lastname: '',
+    birthDate: '',
     phoneNumber: '',
-    birthDate: ''
-  });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+    general: ''
+  })
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-
-    // Validation basique
-    if (formData.password !== formData.confirmPassword) {
-      setError('Les mots de passe ne correspondent pas');
-      return;
+  const handleSubmit = (event) => {
+    event.preventDefault()
+    
+    // Réinitialiser les erreurs
+    const newErrors = { ...errors }
+    Object.keys(newErrors).forEach(key => newErrors[key] = '')
+    
+    // Validation côté client
+    let isValid = true
+    
+    if (!firstname) {
+      newErrors.firstname = 'Le prénom est requis'
+      isValid = false
     }
-
-    if (formData.password.length < 6) {
-      setError('Le mot de passe doit contenir au moins 6 caractères');
-      return;
+    
+    if (!lastname) {
+      newErrors.lastname = 'Le nom est requis'
+      isValid = false
     }
-
-    setLoading(true);
-
-    try {
-      // On retire confirmPassword avant d'envoyer les données
-      const { confirmPassword, ...dataToSend } = formData;
-      
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}register`, dataToSend);
-      
-      // Stocker les tokens dans le localStorage
-      localStorage.setItem('accessToken', response.data.accessToken);
-      localStorage.setItem('refreshToken', response.data.refreshToken);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-
-      // Rediriger vers la page d'accueil
-      navigate('/');
-    } catch (err) {
-      setError(err.response?.data?.error || 'Une erreur est survenue lors de l\'inscription');
-    } finally {
-      setLoading(false);
+    
+    if (!email) {
+      newErrors.email = 'L\'email est requis'
+      isValid = false
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = 'Format d\'email invalide'
+      isValid = false
     }
-  };
+    
+    if (!password) {
+      newErrors.password = 'Le mot de passe est requis'
+      isValid = false
+    } else if (password.length < 10) {
+      newErrors.password = 'Le mot de passe doit contenir au moins 10 caractères'
+      isValid = false
+    } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(password)) {
+      newErrors.password = 'Le mot de passe doit contenir une majuscule, une minuscule et un chiffre'
+      isValid = false
+    }
+    
+    if (password !== confirmPassword) {
+      newErrors.confirmPassword = 'Les mots de passe ne correspondent pas'
+      isValid = false
+    }
+    
+    if (phoneNumber && !/^(0[67][0-9]{8}|\+33[67][0-9]{8})$/.test(phoneNumber)) {
+      newErrors.phoneNumber = 'Format de numéro de téléphone invalide'
+      isValid = false
+    }
+    
+    setErrors(newErrors)
+    
+    if (!isValid) return
+    
+    // Mettre en majuscule la première lettre du prénom et du nom
+    const capitalizeFirstLetter = (string) => {
+      return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
+    }
+    
+    const formattedFirstname = firstname ? capitalizeFirstLetter(firstname) : '';
+    const formattedLastname = lastname ? capitalizeFirstLetter(lastname) : '';
+    
+    // Préparer les données formatées
+    const formattedData = {
+      firstname: formattedFirstname,
+      lastname: formattedLastname,
+      email: email.trim().toLowerCase(),
+      password,
+      confirmPassword,
+      birthDate: birthDate ? birthDate : undefined,
+      phoneNumber: phoneNumber || undefined
+    }
+    
+    // Appeler la fonction de callback avec les données formatées
+    onRegister(formattedData);
+  }
+
+  // Fonction pour gérer les erreurs externes (du serveur)
+  const setServerErrors = (error) => {
+    const newErrors = { ...errors }
+    
+    // Réinitialiser les erreurs
+    Object.keys(newErrors).forEach(key => newErrors[key] = '')
+    
+    if (error.response?.data?.error?.issues) {
+      // Erreurs de validation Zod
+      const issues = error.response.data.error.issues;
+      issues.forEach(issue => {
+        const field = issue.path[0];
+        if (newErrors.hasOwnProperty(field)) {
+          newErrors[field] = issue.message;
+        } else {
+          newErrors.general = newErrors.general 
+            ? `${newErrors.general}\n${issue.message}` 
+            : issue.message;
+        }
+      });
+    } else if (error.response?.data?.error) {
+      // Erreur du serveur avec message
+      newErrors.general = error.response.data.error;
+    } else {
+      // Erreur générique
+      newErrors.general = 'Une erreur est survenue lors de l\'inscription';
+    }
+    
+    setErrors(newErrors);
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Créer un compte
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Ou{' '}
-            <button
-              onClick={() => navigate('/login')}
-              className="font-medium text-blue-600 hover:text-blue-500"
-            >
-              connectez-vous à votre compte existant
-            </button>
-          </p>
-        </div>
-
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-              <span className="block sm:inline">{error}</span>
+    <Card className="w-full max-w-md bg-white">
+      <CardHeader>
+        <CardTitle className="text-2xl font-bold">Inscription</CardTitle>
+      </CardHeader>
+      <form onSubmit={handleSubmit}>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <label htmlFor="firstname" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              Prénom
+            </label>
+            <Input
+              id="firstname"
+              type="text"
+              placeholder="Entrez votre prénom"
+              value={firstname}
+              onChange={(e) => {
+                const value = e.target.value;
+                setFirstname(value);
+              }}
+              className={errors.firstname ? "border-red-500" : ""}
+            />
+            {errors.firstname && (
+              <p className="text-red-500 text-xs mt-1">{errors.firstname}</p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="lastname" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              Nom
+            </label>
+            <Input
+              id="lastname"
+              type="text"
+              placeholder="Entrez votre nom"
+              value={lastname}
+              onChange={(e) => {
+                const value = e.target.value;
+                setLastname(value);
+              }}
+              className={errors.lastname ? "border-red-500" : ""}
+            />
+            {errors.lastname && (
+              <p className="text-red-500 text-xs mt-1">{errors.lastname}</p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="email" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              Adresse email
+            </label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="Entrez votre adresse email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={errors.email ? "border-red-500" : ""}
+            />
+            {errors.email && (
+              <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="birthDate" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              Date de naissance (optionnel)
+            </label>
+            <Input
+              id="birthDate"
+              type="date"
+              value={birthDate}
+              onChange={(e) => setBirthDate(e.target.value)}
+              max={new Date().toISOString().split('T')[0]}
+              className={errors.birthDate ? "border-red-500" : ""}
+            />
+            {errors.birthDate && (
+              <p className="text-red-500 text-xs mt-1">{errors.birthDate}</p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="phoneNumber" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              Numéro de téléphone (optionnel)
+            </label>
+            <Input
+              id="phoneNumber"
+              type="tel"
+              placeholder="Entrez votre numéro de téléphone"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              className={errors.phoneNumber ? "border-red-500" : ""}
+            />
+            {errors.phoneNumber && (
+              <p className="text-red-500 text-xs mt-1">{errors.phoneNumber}</p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="password" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              Mot de passe
+            </label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="Créer votre mot de passe"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className={errors.password ? "border-red-500" : ""}
+            />
+            {errors.password && (
+              <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="confirm-password" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              Confirmation du mot de passe
+            </label>
+            <Input
+              id="confirm-password"
+              type="password"
+              placeholder="Confirmer votre mot de passe"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className={errors.confirmPassword ? "border-red-500" : ""}
+            />
+            {errors.confirmPassword && (
+              <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>
+            )}
+          </div>
+          {errors.general && (
+            <div className="text-red-500 text-sm whitespace-pre-line">
+              {errors.general}
             </div>
           )}
-
-          <div className="rounded-md shadow-sm space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="firstname" className="block text-sm font-medium text-gray-700">
-                  Prénom
-                </label>
-                <input
-                  id="firstname"
-                  name="firstname"
-                  type="text"
-                  required
-                  className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  value={formData.firstname}
-                  onChange={handleChange}
-                />
-              </div>
-              <div>
-                <label htmlFor="lastname" className="block text-sm font-medium text-gray-700">
-                  Nom
-                </label>
-                <input
-                  id="lastname"
-                  name="lastname"
-                  type="text"
-                  required
-                  className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  value={formData.lastname}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                value={formData.email}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">
-                Numéro de téléphone
-              </label>
-              <input
-                id="phoneNumber"
-                name="phoneNumber"
-                type="tel"
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                value={formData.phoneNumber}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="birthDate" className="block text-sm font-medium text-gray-700">
-                Date de naissance
-              </label>
-              <input
-                id="birthDate"
-                name="birthDate"
-                type="date"
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                value={formData.birthDate}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Mot de passe
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                value={formData.password}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                Confirmer le mot de passe
-              </label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                required
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
-
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
-                loading ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'
-              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
+        </CardContent>
+        <CardFooter className="flex flex-col space-y-3">
+          <Button 
+            type="submit" 
+            className="w-full"
+            disabled={isPending}
+          >
+            {isPending ? 'Inscription en cours...' : 'S\'inscrire'}
+          </Button>
+          <div className="text-sm text-center">
+            Vous avez déjà un compte ?{' '}
+            <Link
+              to="/auth/login"
+              className="text-blue-600 hover:underline"
             >
-              {loading ? (
-                <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                </span>
-              ) : null}
-              {loading ? 'Inscription en cours...' : 'S\'inscrire'}
-            </button>
+              Se connecter
+            </Link>
           </div>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-export default RegisterForm; 
+        </CardFooter>
+      </form>
+    </Card>
+  )
+}

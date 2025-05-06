@@ -4853,7 +4853,6 @@ export namespace Prisma {
     emailVerificationToken: string | null
     isVerified: boolean | null
     resetPasswordToken: string | null
-    resetPasswordExpire: Date | null
     themeId: number | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -4872,7 +4871,6 @@ export namespace Prisma {
     emailVerificationToken: string | null
     isVerified: boolean | null
     resetPasswordToken: string | null
-    resetPasswordExpire: Date | null
     themeId: number | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -4891,7 +4889,6 @@ export namespace Prisma {
     emailVerificationToken: number
     isVerified: number
     resetPasswordToken: number
-    resetPasswordExpire: number
     themeId: number
     createdAt: number
     updatedAt: number
@@ -4922,7 +4919,6 @@ export namespace Prisma {
     emailVerificationToken?: true
     isVerified?: true
     resetPasswordToken?: true
-    resetPasswordExpire?: true
     themeId?: true
     createdAt?: true
     updatedAt?: true
@@ -4941,7 +4937,6 @@ export namespace Prisma {
     emailVerificationToken?: true
     isVerified?: true
     resetPasswordToken?: true
-    resetPasswordExpire?: true
     themeId?: true
     createdAt?: true
     updatedAt?: true
@@ -4960,7 +4955,6 @@ export namespace Prisma {
     emailVerificationToken?: true
     isVerified?: true
     resetPasswordToken?: true
-    resetPasswordExpire?: true
     themeId?: true
     createdAt?: true
     updatedAt?: true
@@ -5066,7 +5060,6 @@ export namespace Prisma {
     emailVerificationToken: string | null
     isVerified: boolean
     resetPasswordToken: string | null
-    resetPasswordExpire: Date | null
     themeId: number | null
     createdAt: Date
     updatedAt: Date
@@ -5104,7 +5097,6 @@ export namespace Prisma {
     emailVerificationToken?: boolean
     isVerified?: boolean
     resetPasswordToken?: boolean
-    resetPasswordExpire?: boolean
     themeId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -5135,7 +5127,6 @@ export namespace Prisma {
     emailVerificationToken?: boolean
     isVerified?: boolean
     resetPasswordToken?: boolean
-    resetPasswordExpire?: boolean
     themeId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -5155,7 +5146,6 @@ export namespace Prisma {
     emailVerificationToken?: boolean
     isVerified?: boolean
     resetPasswordToken?: boolean
-    resetPasswordExpire?: boolean
     themeId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -5175,14 +5165,13 @@ export namespace Prisma {
     emailVerificationToken?: boolean
     isVerified?: boolean
     resetPasswordToken?: boolean
-    resetPasswordExpire?: boolean
     themeId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     isActive?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "firstname" | "lastname" | "email" | "password" | "profilePicture" | "birthDate" | "phoneNumber" | "emailVerificationToken" | "isVerified" | "resetPasswordToken" | "resetPasswordExpire" | "themeId" | "createdAt" | "updatedAt" | "isActive", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "firstname" | "lastname" | "email" | "password" | "profilePicture" | "birthDate" | "phoneNumber" | "emailVerificationToken" | "isVerified" | "resetPasswordToken" | "themeId" | "createdAt" | "updatedAt" | "isActive", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     theme?: boolean | User$themeArgs<ExtArgs>
     role?: boolean | User$roleArgs<ExtArgs>
@@ -5231,7 +5220,6 @@ export namespace Prisma {
       emailVerificationToken: string | null
       isVerified: boolean
       resetPasswordToken: string | null
-      resetPasswordExpire: Date | null
       themeId: number | null
       createdAt: Date
       updatedAt: Date
@@ -5681,7 +5669,6 @@ export namespace Prisma {
     readonly emailVerificationToken: FieldRef<"User", 'String'>
     readonly isVerified: FieldRef<"User", 'Boolean'>
     readonly resetPasswordToken: FieldRef<"User", 'String'>
-    readonly resetPasswordExpire: FieldRef<"User", 'DateTime'>
     readonly themeId: FieldRef<"User", 'Int'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
     readonly updatedAt: FieldRef<"User", 'DateTime'>
@@ -32211,7 +32198,6 @@ export namespace Prisma {
     emailVerificationToken: 'emailVerificationToken',
     isVerified: 'isVerified',
     resetPasswordToken: 'resetPasswordToken',
-    resetPasswordExpire: 'resetPasswordExpire',
     themeId: 'themeId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
@@ -32723,7 +32709,6 @@ export namespace Prisma {
     emailVerificationToken?: StringNullableFilter<"User"> | string | null
     isVerified?: BoolFilter<"User"> | boolean
     resetPasswordToken?: StringNullableFilter<"User"> | string | null
-    resetPasswordExpire?: DateTimeNullableFilter<"User"> | Date | string | null
     themeId?: IntNullableFilter<"User"> | number | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
@@ -32753,7 +32738,6 @@ export namespace Prisma {
     emailVerificationToken?: SortOrderInput | SortOrder
     isVerified?: SortOrder
     resetPasswordToken?: SortOrderInput | SortOrder
-    resetPasswordExpire?: SortOrderInput | SortOrder
     themeId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -32786,7 +32770,6 @@ export namespace Prisma {
     emailVerificationToken?: StringNullableFilter<"User"> | string | null
     isVerified?: BoolFilter<"User"> | boolean
     resetPasswordToken?: StringNullableFilter<"User"> | string | null
-    resetPasswordExpire?: DateTimeNullableFilter<"User"> | Date | string | null
     themeId?: IntNullableFilter<"User"> | number | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
@@ -32816,7 +32799,6 @@ export namespace Prisma {
     emailVerificationToken?: SortOrderInput | SortOrder
     isVerified?: SortOrder
     resetPasswordToken?: SortOrderInput | SortOrder
-    resetPasswordExpire?: SortOrderInput | SortOrder
     themeId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -32843,7 +32825,6 @@ export namespace Prisma {
     emailVerificationToken?: StringNullableWithAggregatesFilter<"User"> | string | null
     isVerified?: BoolWithAggregatesFilter<"User"> | boolean
     resetPasswordToken?: StringNullableWithAggregatesFilter<"User"> | string | null
-    resetPasswordExpire?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
     themeId?: IntNullableWithAggregatesFilter<"User"> | number | null
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
@@ -34260,7 +34241,6 @@ export namespace Prisma {
     emailVerificationToken?: string | null
     isVerified?: boolean
     resetPasswordToken?: string | null
-    resetPasswordExpire?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     isActive?: boolean
@@ -34289,7 +34269,6 @@ export namespace Prisma {
     emailVerificationToken?: string | null
     isVerified?: boolean
     resetPasswordToken?: string | null
-    resetPasswordExpire?: Date | string | null
     themeId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -34317,7 +34296,6 @@ export namespace Prisma {
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
     isVerified?: BoolFieldUpdateOperationsInput | boolean
     resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
-    resetPasswordExpire?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -34346,7 +34324,6 @@ export namespace Prisma {
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
     isVerified?: BoolFieldUpdateOperationsInput | boolean
     resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
-    resetPasswordExpire?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     themeId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -34375,7 +34352,6 @@ export namespace Prisma {
     emailVerificationToken?: string | null
     isVerified?: boolean
     resetPasswordToken?: string | null
-    resetPasswordExpire?: Date | string | null
     themeId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -34393,7 +34369,6 @@ export namespace Prisma {
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
     isVerified?: BoolFieldUpdateOperationsInput | boolean
     resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
-    resetPasswordExpire?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -34411,7 +34386,6 @@ export namespace Prisma {
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
     isVerified?: BoolFieldUpdateOperationsInput | boolean
     resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
-    resetPasswordExpire?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     themeId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35919,7 +35893,6 @@ export namespace Prisma {
     emailVerificationToken?: SortOrder
     isVerified?: SortOrder
     resetPasswordToken?: SortOrder
-    resetPasswordExpire?: SortOrder
     themeId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -35943,7 +35916,6 @@ export namespace Prisma {
     emailVerificationToken?: SortOrder
     isVerified?: SortOrder
     resetPasswordToken?: SortOrder
-    resetPasswordExpire?: SortOrder
     themeId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -35962,7 +35934,6 @@ export namespace Prisma {
     emailVerificationToken?: SortOrder
     isVerified?: SortOrder
     resetPasswordToken?: SortOrder
-    resetPasswordExpire?: SortOrder
     themeId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -39834,7 +39805,6 @@ export namespace Prisma {
     emailVerificationToken?: string | null
     isVerified?: boolean
     resetPasswordToken?: string | null
-    resetPasswordExpire?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     isActive?: boolean
@@ -39862,7 +39832,6 @@ export namespace Prisma {
     emailVerificationToken?: string | null
     isVerified?: boolean
     resetPasswordToken?: string | null
-    resetPasswordExpire?: Date | string | null
     themeId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -39921,7 +39890,6 @@ export namespace Prisma {
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
     isVerified?: BoolFieldUpdateOperationsInput | boolean
     resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
-    resetPasswordExpire?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -39949,7 +39917,6 @@ export namespace Prisma {
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
     isVerified?: BoolFieldUpdateOperationsInput | boolean
     resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
-    resetPasswordExpire?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     themeId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -39998,7 +39965,6 @@ export namespace Prisma {
     emailVerificationToken?: string | null
     isVerified?: boolean
     resetPasswordToken?: string | null
-    resetPasswordExpire?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     isActive?: boolean
@@ -40026,7 +39992,6 @@ export namespace Prisma {
     emailVerificationToken?: string | null
     isVerified?: boolean
     resetPasswordToken?: string | null
-    resetPasswordExpire?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     isActive?: boolean
@@ -40083,7 +40048,6 @@ export namespace Prisma {
     emailVerificationToken?: StringNullableFilter<"User"> | string | null
     isVerified?: BoolFilter<"User"> | boolean
     resetPasswordToken?: StringNullableFilter<"User"> | string | null
-    resetPasswordExpire?: DateTimeNullableFilter<"User"> | Date | string | null
     themeId?: IntNullableFilter<"User"> | number | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
@@ -40434,7 +40398,6 @@ export namespace Prisma {
     emailVerificationToken?: string | null
     isVerified?: boolean
     resetPasswordToken?: string | null
-    resetPasswordExpire?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     isActive?: boolean
@@ -40462,7 +40425,6 @@ export namespace Prisma {
     emailVerificationToken?: string | null
     isVerified?: boolean
     resetPasswordToken?: string | null
-    resetPasswordExpire?: Date | string | null
     themeId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -40525,7 +40487,6 @@ export namespace Prisma {
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
     isVerified?: BoolFieldUpdateOperationsInput | boolean
     resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
-    resetPasswordExpire?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -40553,7 +40514,6 @@ export namespace Prisma {
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
     isVerified?: BoolFieldUpdateOperationsInput | boolean
     resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
-    resetPasswordExpire?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     themeId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40606,7 +40566,6 @@ export namespace Prisma {
     emailVerificationToken?: string | null
     isVerified?: boolean
     resetPasswordToken?: string | null
-    resetPasswordExpire?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     isActive?: boolean
@@ -40634,7 +40593,6 @@ export namespace Prisma {
     emailVerificationToken?: string | null
     isVerified?: boolean
     resetPasswordToken?: string | null
-    resetPasswordExpire?: Date | string | null
     themeId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -40698,7 +40656,6 @@ export namespace Prisma {
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
     isVerified?: BoolFieldUpdateOperationsInput | boolean
     resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
-    resetPasswordExpire?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -40726,7 +40683,6 @@ export namespace Prisma {
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
     isVerified?: BoolFieldUpdateOperationsInput | boolean
     resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
-    resetPasswordExpire?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     themeId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41018,7 +40974,6 @@ export namespace Prisma {
     emailVerificationToken?: string | null
     isVerified?: boolean
     resetPasswordToken?: string | null
-    resetPasswordExpire?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     isActive?: boolean
@@ -41046,7 +41001,6 @@ export namespace Prisma {
     emailVerificationToken?: string | null
     isVerified?: boolean
     resetPasswordToken?: string | null
-    resetPasswordExpire?: Date | string | null
     themeId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -41116,7 +41070,6 @@ export namespace Prisma {
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
     isVerified?: BoolFieldUpdateOperationsInput | boolean
     resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
-    resetPasswordExpire?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -41144,7 +41097,6 @@ export namespace Prisma {
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
     isVerified?: BoolFieldUpdateOperationsInput | boolean
     resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
-    resetPasswordExpire?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     themeId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41334,7 +41286,6 @@ export namespace Prisma {
     emailVerificationToken?: string | null
     isVerified?: boolean
     resetPasswordToken?: string | null
-    resetPasswordExpire?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     isActive?: boolean
@@ -41362,7 +41313,6 @@ export namespace Prisma {
     emailVerificationToken?: string | null
     isVerified?: boolean
     resetPasswordToken?: string | null
-    resetPasswordExpire?: Date | string | null
     themeId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -41449,7 +41399,6 @@ export namespace Prisma {
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
     isVerified?: BoolFieldUpdateOperationsInput | boolean
     resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
-    resetPasswordExpire?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -41477,7 +41426,6 @@ export namespace Prisma {
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
     isVerified?: BoolFieldUpdateOperationsInput | boolean
     resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
-    resetPasswordExpire?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     themeId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41597,7 +41545,6 @@ export namespace Prisma {
     emailVerificationToken?: string | null
     isVerified?: boolean
     resetPasswordToken?: string | null
-    resetPasswordExpire?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     isActive?: boolean
@@ -41625,7 +41572,6 @@ export namespace Prisma {
     emailVerificationToken?: string | null
     isVerified?: boolean
     resetPasswordToken?: string | null
-    resetPasswordExpire?: Date | string | null
     themeId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -41684,7 +41630,6 @@ export namespace Prisma {
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
     isVerified?: BoolFieldUpdateOperationsInput | boolean
     resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
-    resetPasswordExpire?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -41712,7 +41657,6 @@ export namespace Prisma {
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
     isVerified?: BoolFieldUpdateOperationsInput | boolean
     resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
-    resetPasswordExpire?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     themeId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41761,7 +41705,6 @@ export namespace Prisma {
     emailVerificationToken?: string | null
     isVerified?: boolean
     resetPasswordToken?: string | null
-    resetPasswordExpire?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     isActive?: boolean
@@ -41789,7 +41732,6 @@ export namespace Prisma {
     emailVerificationToken?: string | null
     isVerified?: boolean
     resetPasswordToken?: string | null
-    resetPasswordExpire?: Date | string | null
     themeId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -41857,7 +41799,6 @@ export namespace Prisma {
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
     isVerified?: BoolFieldUpdateOperationsInput | boolean
     resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
-    resetPasswordExpire?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -41885,7 +41826,6 @@ export namespace Prisma {
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
     isVerified?: BoolFieldUpdateOperationsInput | boolean
     resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
-    resetPasswordExpire?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     themeId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42131,7 +42071,6 @@ export namespace Prisma {
     emailVerificationToken?: string | null
     isVerified?: boolean
     resetPasswordToken?: string | null
-    resetPasswordExpire?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     isActive?: boolean
@@ -42159,7 +42098,6 @@ export namespace Prisma {
     emailVerificationToken?: string | null
     isVerified?: boolean
     resetPasswordToken?: string | null
-    resetPasswordExpire?: Date | string | null
     themeId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -42245,7 +42183,6 @@ export namespace Prisma {
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
     isVerified?: BoolFieldUpdateOperationsInput | boolean
     resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
-    resetPasswordExpire?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -42273,7 +42210,6 @@ export namespace Prisma {
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
     isVerified?: BoolFieldUpdateOperationsInput | boolean
     resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
-    resetPasswordExpire?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     themeId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42454,7 +42390,6 @@ export namespace Prisma {
     emailVerificationToken?: string | null
     isVerified?: boolean
     resetPasswordToken?: string | null
-    resetPasswordExpire?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     isActive?: boolean
@@ -42482,7 +42417,6 @@ export namespace Prisma {
     emailVerificationToken?: string | null
     isVerified?: boolean
     resetPasswordToken?: string | null
-    resetPasswordExpire?: Date | string | null
     themeId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -42525,7 +42459,6 @@ export namespace Prisma {
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
     isVerified?: BoolFieldUpdateOperationsInput | boolean
     resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
-    resetPasswordExpire?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -42553,7 +42486,6 @@ export namespace Prisma {
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
     isVerified?: BoolFieldUpdateOperationsInput | boolean
     resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
-    resetPasswordExpire?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     themeId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42580,7 +42512,6 @@ export namespace Prisma {
     emailVerificationToken?: string | null
     isVerified?: boolean
     resetPasswordToken?: string | null
-    resetPasswordExpire?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     isActive?: boolean
@@ -42608,7 +42539,6 @@ export namespace Prisma {
     emailVerificationToken?: string | null
     isVerified?: boolean
     resetPasswordToken?: string | null
-    resetPasswordExpire?: Date | string | null
     themeId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -42674,7 +42604,6 @@ export namespace Prisma {
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
     isVerified?: BoolFieldUpdateOperationsInput | boolean
     resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
-    resetPasswordExpire?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -42702,7 +42631,6 @@ export namespace Prisma {
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
     isVerified?: BoolFieldUpdateOperationsInput | boolean
     resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
-    resetPasswordExpire?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     themeId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43078,7 +43006,6 @@ export namespace Prisma {
     emailVerificationToken?: string | null
     isVerified?: boolean
     resetPasswordToken?: string | null
-    resetPasswordExpire?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     isActive?: boolean
@@ -43095,7 +43022,6 @@ export namespace Prisma {
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
     isVerified?: BoolFieldUpdateOperationsInput | boolean
     resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
-    resetPasswordExpire?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -43123,7 +43049,6 @@ export namespace Prisma {
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
     isVerified?: BoolFieldUpdateOperationsInput | boolean
     resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
-    resetPasswordExpire?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -43151,7 +43076,6 @@ export namespace Prisma {
     emailVerificationToken?: NullableStringFieldUpdateOperationsInput | string | null
     isVerified?: BoolFieldUpdateOperationsInput | boolean
     resetPasswordToken?: NullableStringFieldUpdateOperationsInput | string | null
-    resetPasswordExpire?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isActive?: BoolFieldUpdateOperationsInput | boolean

@@ -1,135 +1,161 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+'use client'
 
-const LoginForm = () => {
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState({
+import { useState } from 'react'
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Link } from 'react-router-dom'
+
+export default function LoginForm({ onLogin, isPending }) {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [errors, setErrors] = useState({
     email: '',
-    password: ''
-  });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+    password: '',
+    general: ''
+  })
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      const response = await axios.post('http://localhost:3003/api/auth/login', formData);
-      
-      // Stocker les tokens dans le localStorage
-      localStorage.setItem('accessToken', response.data.accessToken);
-      localStorage.setItem('refreshToken', response.data.refreshToken);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-
-      // Rediriger vers la page d'accueil
-      navigate('/');
-    } catch (err) {
-      setError(err.response?.data?.error || 'Une erreur est survenue lors de la connexion');
-    } finally {
-      setLoading(false);
+  const handleSubmit = (event) => {
+    event.preventDefault()
+    
+    // Réinitialiser les erreurs
+    const newErrors = { ...errors }
+    Object.keys(newErrors).forEach(key => newErrors[key] = '')
+    
+    // Validation côté client
+    let isValid = true
+    
+    if (!email) {
+      newErrors.email = 'L\'email est requis'
+      isValid = false
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = 'Format d\'email invalide'
+      isValid = false
     }
-  };
+    
+    if (!password) {
+      newErrors.password = 'Le mot de passe est requis'
+      isValid = false
+    } else if (password.length < 10) {
+      newErrors.password = 'Le mot de passe doit contenir au moins 10 caractères'
+      isValid = false
+    }
+    
+    setErrors(newErrors)
+    
+    if (!isValid) return
+    
+    // Formatage des données
+    const loginData = {
+      email: email.trim().toLowerCase(),
+      password
+    }
+    
+    // Appeler la fonction de callback avec les données formatées
+    onLogin(loginData)
+  }
+
+  // Fonction pour gérer les erreurs externes (du serveur)
+  const setServerErrors = (error) => {
+    const newErrors = { ...errors }
+    
+    // Réinitialiser les erreurs
+    Object.keys(newErrors).forEach(key => newErrors[key] = '')
+    
+    if (error.response?.data?.error) {
+      // Selon le message d'erreur, on peut le diriger vers le bon champ
+      const errorMessage = error.response.data.error;
+      
+      if (errorMessage.includes('Email ou mot de passe incorrect')) {
+        newErrors.general = 'Email ou mot de passe incorrect';
+      } else if (errorMessage.includes('Veuillez vérifier votre email')) {
+        newErrors.general = 'Veuillez vérifier votre email avant de vous connecter';
+      } else {
+        newErrors.general = errorMessage;
+      }
+    } else {
+      // Erreur générique
+      newErrors.general = 'Une erreur est survenue lors de la connexion';
+    }
+    
+    setErrors(newErrors);
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Connexion à votre compte
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Ou{' '}
-            <button
-              onClick={() => navigate('/auth/register')}
-              className="font-medium text-blue-600 hover:text-blue-500"
-            >
-              créer un nouveau compte
-            </button>
-          </p>
-        </div>
-
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-              <span className="block sm:inline">{error}</span>
+    <Card className="w-full max-w-md bg-white">
+      <CardHeader>
+        <CardTitle className="text-2xl font-bold">Connexion</CardTitle>
+        <CardDescription>Connectez-vous à votre compte</CardDescription>
+      </CardHeader>
+      <form onSubmit={handleSubmit}>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <label htmlFor="email" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              Adresse email
+            </label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="Entrez votre adresse email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={errors.email ? "border-red-500" : ""}
+              autoComplete="email"
+            />
+            {errors.email && (
+              <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label htmlFor="password" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                Mot de passe
+              </label>
+              <Link 
+                to="/auth/forgot-password" 
+                className="text-xs text-blue-600 hover:underline"
+              >
+                Mot de passe oublié?
+              </Link>
+            </div>
+            <Input
+              id="password"
+              type="password"
+              placeholder="Entrez votre mot de passe"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className={errors.password ? "border-red-500" : ""}
+              autoComplete="current-password"
+            />
+            {errors.password && (
+              <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+            )}
+          </div>
+          {errors.general && (
+            <div className="text-red-500 text-sm text-center">
+              {errors.general}
             </div>
           )}
-
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="email" className="sr-only">Adresse email</label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Adresse email"
-                value={formData.email}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">Mot de passe</label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Mot de passe"
-                value={formData.password}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
-
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
-                loading ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'
-              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
+        </CardContent>
+        <CardFooter className="flex flex-col space-y-3">
+          <Button 
+            type="submit" 
+            className="w-full"
+            disabled={isPending}
+          >
+            {isPending ? 'Connexion en cours...' : 'Se connecter'}
+          </Button>
+          <div className="text-sm text-center">
+            Vous n'avez pas de compte?{' '}
+            <Link 
+              to="/auth/register" 
+              className="text-blue-600 hover:underline"
             >
-              {loading ? (
-                <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                </span>
-              ) : null}
-              {loading ? 'Connexion en cours...' : 'Se connecter'}
-            </button>
+              Créer un compte
+            </Link>
           </div>
-
-          <div className="flex items-center justify-between">
-            <div className="text-sm">
-              <button
-                type="button"
-                onClick={() => navigate('/forgot-password')}
-                className="font-medium text-blue-600 hover:text-blue-500"
-              >
-                Mot de passe oublié ?
-              </button>
-            </div>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-export default LoginForm; 
+        </CardFooter>
+      </form>
+    </Card>
+  )
+}

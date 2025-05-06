@@ -1,70 +1,97 @@
-import { sign, verify } from "hono/jwt";
+import jwt from 'jsonwebtoken';
 import env from "../config/env.js";
-async function generateToken(user) {
-  const accessToken = await sign(
-    {
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-      exp: Math.floor(Date.now() / 1000) + 60 * env.JWT_EXPIRES_IN,
-    },
-    env.JWT_SECRET
-  );
 
-  // Generate refresh token
-  const refreshToken = await sign(
-    {
-      userId: user.id,
+/**
+ * Génère un token JWT avec un type spécifique
+ * @param {Object} payload Les données à inclure dans le token
+ * @param {string} type Le type de token ('auth', 'email', 'reset')
+ * @returns {string} Le token généré
+ */
+function generateToken(payload, type = 'auth') {
+    if (!env.JWT_SECRET) {
+        throw new Error('JWT_SECRET n\'est pas défini dans les variables d\'environnement');
+    }
 
-      tokenType: 'refresh',
-      exp: Math.floor(Date.now() / 1000) + 60 * env.JWT_EXPIRES_IN
-    },
-    env.JWT_SECRET,
-  )
+    const expiresIn = {
+        'auth': '1h',        // Token d'authentification: 1 heure
+        'email': '24h',      // Token de vérification email: 24 heures
+        'reset': '1h',       // Token de réinitialisation: 1 heure
+        'refresh': '7d'      // Token de rafraîchissement: 7 jours
+    }[type] || '1h';
 
-  return {
-    accessToken,
-    refreshToken,
-  };
+    return jwt.sign(
+        { ...payload, type },
+        env.JWT_SECRET,
+        { expiresIn }
+    );
 }
 
 /**
- * Converts time string (e.g., '24h', '7d') to seconds
- * @param time Time string in format like '24h', '7d', '60m'
- * @returns number of seconds
+ * Génère un token d'authentification
+ * @param {Object} user Les données de l'utilisateur
+ * @returns {Object} Les tokens d'accès et de rafraîchissement
  */
-function parseTimeToSeconds(time) {
-  const unit = time.slice(-1);
-  const value = parseInt(time.slice(0, -1));
+function generateAuthTokens(user) {
+    const accessToken = generateToken({
+        id: user.id,
+        email: user.email,
+        role: user.role?.role?.name || 'user'
+    }, 'auth');
 
-  switch (unit) {
-    case "h":
-      return value * 60 * 60;
-    case "d":
-      return value * 24 * 60 * 60;
-    case "m":
-      return value * 60;
-    case "s":
-      return value;
-    default:
-      return 24 * 60 * 60; // default 24 hours
-  }
+    const refreshToken = generateToken({
+        id: user.id,
+        tokenType: 'refresh'
+    }, 'refresh');
+
+    return { accessToken, refreshToken };
 }
 
 /**
- * Decodes and verifies a JWT token
- * @param token The JWT token to decode
- * @returns The decoded token payload or null if invalid
+ * Génère un token de vérification d'email
+ * @param {string} email L'email à vérifier
+ * @returns {string} Le token de vérification
  */
-async function decodeToken(token) {
-  try {
-    const decoded = (await verify(token, env.JWT_SECRET));
-    return decoded;
-  } catch (error) {
-    console.error("Token verification failed:", error);
-    return null;
-
-  }
+function generateEmailVerificationToken(email) {
+    return generateToken({ email }, 'email');
 }
 
-export { generateToken, decodeToken };
+/**
+ * Génère un token de réinitialisation de mot de passe
+ * @param {string} email L'email de l'utilisateur
+ * @returns {string} Le token de réinitialisation
+ */
+function generatePasswordResetToken(email) {
+    return generateToken({ email }, 'reset');
+}
+
+/**
+ * Vérifie et décode un token JWT
+ * @param {string} token Le token à vérifier
+ * @param {string} expectedType Le type de token attendu
+ * @returns {Object} Le contenu décodé du token
+ */
+function verifyToken(token, expectedType = null) {
+    if (!env.JWT_SECRET) {
+        throw new Error('JWT_SECRET n\'est pas défini dans les variables d\'environnement');
+    }
+
+    try {
+        const decoded = jwt.verify(token, env.JWT_SECRET);
+        
+        // Vérifier le type de token si un type est attendu
+        if (expectedType && decoded.type !== expectedType) {
+            throw new Error('Type de token invalide');
+        }
+
+        return decoded;
+    } catch (error) {
+        throw new Error('Token invalide ou expiré');
+    }
+}
+
+export {
+    generateAuthTokens,
+    generateEmailVerificationToken,
+    generatePasswordResetToken,
+    verifyToken
+};

@@ -27,7 +27,6 @@ model User {
   emailVerificationToken String?
   isVerified            Boolean           @default(false)
   resetPasswordToken     String?
-  resetPasswordExpire    DateTime?
   theme                  Theme?            @relation(fields: [themeId], references: [id], onDelete: SetNull)
   themeId               Int?
   createdAt             DateTime          @default(now())
