@@ -1,8 +1,9 @@
-import { PrismaClient } from '@prisma/client';
+// Importation du client Prisma généré directement
+import { PrismaClient } from '../../generated/prisma/index.js';
 
 // Création d'une instance Prisma partagée à travers l'application
 const prisma = new PrismaClient({
-  log: ['query', 'info', 'warn', 'error'],
+  log: ['error'],
 });
 
 // Fonction qui sera exécutée lors de l'arrêt de l'application
@@ -15,4 +16,4 @@ async function disconnectPrisma() {
 process.on('SIGINT', disconnectPrisma);
 process.on('SIGTERM', disconnectPrisma);
 
-export default prisma; 
+export { prisma }; 

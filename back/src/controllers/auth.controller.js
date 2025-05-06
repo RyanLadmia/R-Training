@@ -4,14 +4,19 @@ import { comparePassword, hashPassword} from "../utils/password.js";
 // Inscription
 async function register(c) {
     try{
+        console.log("Début de l'inscription");
         const data = c.req.valid('json')
-        await authService.register(data)
-        return c.json({
-            message: "Registration succesful. Please check your email for  verification."
-        }, 201)
+        console.log("Données validées:", data);
+        const result = await authService.register(data)
+        console.log("Inscription réussie");
+        return c.json(result, 201)
     } catch (error) {
-        console.log(error)
-            return c.json({ error: "Registrration failed"}, 400)
+        console.log("Erreur détaillée:", error.message);
+        console.log("Stack trace:", error.stack);
+        return c.json({ 
+            error: error.message || "Registration failed",
+            details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        }, 400)
     }
 }
 

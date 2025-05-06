@@ -4,6 +4,7 @@ import Home from './page/home'
 import Login from './page/login'
 import Register from './page/register'
 import ExercisesList from './page/exercises-list'
+import VerifyEmail from './page/verify-email'
 
 
 function App() {
@@ -16,11 +17,13 @@ function App() {
           {/* Route principale */}
           <Route path="/" element={<Home />} />
           <Route path="/exercises" element={<ExercisesList />} />
-          {/* Futures routes */}
+          {/* Routes d'authentification */}
           <Route path="/auth">
             <Route path="login" element={<Login />} />
             <Route path="register" element={<Register />} />
           </Route>
+          {/* Route de vérification d'email */}
+          <Route path="/verify-email/:token" element={<VerifyEmail />} />
           {/*
           <Route path="/profile" element={<Profile />} />
           */}

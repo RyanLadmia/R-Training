@@ -5,23 +5,18 @@ import { sendEmail } from './mailer.js'
 /**
  * Sends a verification email to the user
  * @param userEmail The email address of the user
+ * @param verificationToken The verification token
  * @returns Promise<boolean> True if email was sent successfully
  */
-export async function sendVerificationEmail(userEmail) {
-  const verificationToken = await sign(
-    {
-      email: userEmail,
-      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24
-    },
-    env.JWT_SECRET,
-  )
-  const verificationUrl = `http://127.0.0.1:3003/verify/${verificationToken}`
+export async function sendVerificationEmail(userEmail, verificationToken) {
+  const verificationUrl = `${process.env.APP_URL || 'http://localhost:5174'}/verify-email/${verificationToken}`
   const html = `
         <h1>Vérification de l'email</h1>
-        <p>Veuillez cliquer sur le lien ci-dessous pour vérifier votre adresse email :</p>
-        <a href="${verificationUrl}">Vérifier l'email</a>
+        <p>Bienvenue ! Pour activer votre compte, veuillez cliquer sur le lien ci-dessous :</p>
+        <a href="${verificationUrl}" style="display: inline-block; padding: 10px 20px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">Vérifier mon email</a>
         <p>Ce lien expirera dans 24 heures.</p>
-        <p>Si vous n'avez pas demandé cette vérification, veuillez ignorer cet email.</p>
+        <p>Si vous n'avez pas créé de compte, veuillez ignorer cet email.</p>
+        <p>À bientôt !</p>
       `
   try {
     await sendEmail(userEmail, 'Vérifiez votre adresse email', html)
@@ -31,9 +26,6 @@ export async function sendVerificationEmail(userEmail) {
     return false
   }
 }
-
-
-
 
 export async function sendPasswordResetEmail(email, resetToken) {
   const verificationUrl = `${env.APP_URL}/reset-password?token=${resetToken}`

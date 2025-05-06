@@ -45,7 +45,7 @@ const RegisterForm = () => {
       // On retire confirmPassword avant d'envoyer les données
       const { confirmPassword, ...dataToSend } = formData;
       
-      const response = await axios.post('http://localhost:3003/api/auth/register', dataToSend);
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}register`, dataToSend);
       
       // Stocker les tokens dans le localStorage
       localStorage.setItem('accessToken', response.data.accessToken);

@@ -1,7 +1,17 @@
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
-import { authGuard } from '../middlewares/auth.middleware.js'
+import { authGuard } from '../middlewares/authguard.js'
+import {
+    register,
+    login,
+    forgotPassword,
+    getUserProfile,
+    sendVerificationEmail,
+    resetPassword,
+    verifyEmail as verifyUserEmail,
+    updateUserProfile
+} from '../controllers/auth.controller.js'
 
 const authRoutes = new Hono()
 
@@ -9,8 +19,8 @@ const authRoutes = new Hono()
 authRoutes.post(
     "/register", zValidator('json',
         z.object({
-            firstName: z.string().min(2),
-            lastName: z.string().min(2),
+            firstname: z.string().min(2),
+            lastname: z.string().min(2),
             email: z.string().email("Adresse e-mail invalide"),
             password: z.string()
                 .min(10, "Le mot de passe doit contenir au moins 10 caractères")
@@ -67,8 +77,9 @@ authRoutes.post(
 );
 
 // Envoi d'un email de vérification
-authGuardRoutes.post(
+authRoutes.post(
     "/send-verification-email",
+    authGuard(),
     zValidator('json',
         z.object({
             email: z.string().email("Adresse e-mail invalide."),
@@ -95,8 +106,8 @@ authRoutes.put(
     authGuard(),
     zValidator('json',
         z.object({
-            firstName: z.string().min(2).optional(),
-            lastName: z.string().min(2).optional(),
+            firstname: z.string().min(2).optional(),
+            lastname: z.string().min(2).optional(),
             email: z.string().email("Adresse e-mail invalide").optional(),
             newpassword: z.string().min(10, "Le mot de passe doit contenir au moins 10 caractères")
             .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/,
