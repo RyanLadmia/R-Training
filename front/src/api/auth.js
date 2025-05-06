@@ -42,10 +42,10 @@ async function updateProfile(userId, data) {
 
 export async function verifyEmail(token) {
     try {
-        const response = await instance.get(`/api/verify-email/${token}`);
+        const response = await instance.get(`/verify-email/${token}`);
         return response.data;
     } catch (error) {
-        console.log("Error during email verification:", error.response?.data);
+        console.error("Error during email verification:", error.response?.data?.error || error.message);
         throw error;
     }
 }

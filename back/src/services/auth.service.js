@@ -46,7 +46,7 @@ function generateVerificationToken(payload) {
     if (!process.env.JWT_SECRET) {
         throw new Error('JWT_SECRET n\'est pas défini dans les variables d\'environnement');
     }
-    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h'});
+    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '24h'});
 }
 
 // Vérifier un token de vérification d'email
@@ -85,11 +85,7 @@ async function register(data) {
         }
 
         // Générer le token de vérification
-        const emailVerificationToken = jwt.sign(
-            { email },
-            process.env.JWT_SECRET,
-            { expiresIn: '24h' }
-        );
+        const emailVerificationToken = generateVerificationToken({ email });
 
         // Hacher le mot de passe
         const hashedPassword = await hashPassword(password);
@@ -241,7 +237,7 @@ async function sendEmailVerification(email) {
     }
     
     const token = generateVerificationToken({ email });
-    const verificationLink = `${env.FRONTEND_URL}/verify-email?token=${token}`;
+    const verificationLink = `${env.APP_URL}/verify-email?token=${token}`;
     
     // Envoyer l'email de vérification
     await sendVerificationEmailUtil(email);
@@ -259,9 +255,20 @@ async function findUserByEmail(email) {
 // Vérifier l'email d'un utilisateur
 async function verifyEmail(token) {
     try {
-        // Trouver l'utilisateur avec ce token
-        const user = await prisma.user.findFirst({
-            where: { emailVerificationToken: token }
+        // D'abord vérifier si le token est valide
+        let decoded;
+        try {
+            decoded = jwt.verify(token, process.env.JWT_SECRET);
+        } catch (error) {
+            throw new Error('Token de vérification invalide ou expiré');
+        }
+
+        // Trouver l'utilisateur avec l'email du token
+        const user = await prisma.user.findUnique({
+            where: { 
+                email: decoded.email,
+                emailVerificationToken: token
+            }
         });
 
         if (!user) {
@@ -271,13 +278,6 @@ async function verifyEmail(token) {
         // Vérifier si l'email est déjà vérifié
         if (user.isVerified) {
             return { message: 'Email déjà vérifié' };
-        }
-
-        try {
-            // Vérifier le token
-            jwt.verify(token, process.env.JWT_SECRET);
-        } catch (error) {
-            throw new Error('Token de vérification invalide ou expiré');
         }
 
         // Mettre à jour l'utilisateur
@@ -291,7 +291,8 @@ async function verifyEmail(token) {
 
         return { message: 'Email vérifié avec succès' };
     } catch (error) {
-        throw new Error('Erreur lors de la vérification de l\'email: ' + error.message);
+        console.error('Erreur de vérification:', error);
+        throw new Error(error.message || 'Erreur lors de la vérification de l\'email');
     }
 }
 

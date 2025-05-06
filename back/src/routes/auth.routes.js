@@ -89,7 +89,7 @@ authRoutes.post(
 );
 
 authRoutes.get(
-    "verifit/:token",
+    "/verify-email/:token",
     verifyUserEmail
 );
 
