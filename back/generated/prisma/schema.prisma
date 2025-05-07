@@ -1,0 +1,329 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id          Int        @id @default(autoincrement())
+  name        String     @unique
+  description String?
+  users       UserRole[]
+}
+
+model User {
+  id                     Int               @id @default(autoincrement())
+  firstname              String
+  lastname               String
+  email                  String            @unique
+  password               String
+  profilePicture         String?
+  birthDate              DateTime?
+  phoneNumber            String?
+  emailVerificationToken String?
+  isVerified             Boolean           @default(false)
+  resetPasswordToken     String?
+  resetPasswordExpire    DateTime?
+  theme                  Theme?            @relation(fields: [themeId], references: [id], onDelete: SetNull)
+  themeId                Int?
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @default(now())
+  isActive               Boolean           @default(true)
+  role                   UserRole?
+  addresses              UserAddress[]
+  programs               Program[]
+  customExercises        CustomExercise[]  @relation("TrainerExercises")
+  workoutTrackings       WorkoutTracking[]
+  userFavorites          UserFavorite[]
+  cart                   Cart?
+  orders                 Order[]
+  comments               Comment[]
+  supportTickets         SupportTicket[]
+}
+
+model UserRole {
+  id     Int  @id @default(autoincrement())
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int  @unique
+  role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId Int
+}
+
+model Theme {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  description String?
+  users       User[]
+}
+
+model District {
+  id          Int          @id @default(autoincrement())
+  name        String       @unique
+  postalCodes PostalCode[]
+}
+
+model PostalCode {
+  id         Int      @id @default(autoincrement())
+  code       String   @unique
+  district   District @relation(fields: [districtId], references: [id])
+  districtId Int
+  cities     City[]
+}
+
+model City {
+  id           Int        @id @default(autoincrement())
+  name         String
+  addresses    Address[]
+  postalCode   PostalCode @relation(fields: [postalCodeId], references: [id])
+  postalCodeId Int
+
+  @@unique([name, postalCodeId])
+}
+
+model Address {
+  id         Int           @id @default(autoincrement())
+  name       String
+  complement String?
+  city       City          @relation(fields: [cityId], references: [id])
+  cityId     Int
+  users      UserAddress[]
+  orders     Order[]
+}
+
+model UserAddress {
+  id        Int     @id @default(autoincrement())
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  address   Address @relation(fields: [addressId], references: [id])
+  addressId Int
+  isDefault Boolean @default(false)
+
+  @@unique([userId, addressId])
+}
+
+model Program {
+  id              Int              @id @default(autoincrement())
+  name            String
+  description     String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @default(now())
+  user            User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId          Int?
+  programSessions ProgramSession[]
+}
+
+model Session {
+  id               Int               @id @default(autoincrement())
+  name             String
+  day_of_week      DayOfWeek?
+  createdAt        DateTime          @default(now())
+  programs         ProgramSession[]
+  exercises        SessionExercise[]
+  workoutTrackings WorkoutTracking[] @relation("SessionWorkouts")
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+model ProgramSession {
+  id        Int     @id @default(autoincrement())
+  program   Program @relation(fields: [programId], references: [id], onDelete: Cascade)
+  programId Int
+  session   Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId Int
+  order     Int     @default(1)
+
+  @@unique([programId, sessionId])
+}
+
+model CustomExercise {
+  id               Int               @id @default(autoincrement())
+  trainer          User?             @relation("TrainerExercises", fields: [trainerId], references: [id], onDelete: SetNull)
+  trainerId        Int?
+  name             String            @unique
+  description      String?
+  muscle_group     MuscleGroup?
+  image_url        String?
+  sessionExercises SessionExercise[]
+}
+
+enum MuscleGroup {
+  CHEST
+  BACK
+  SHOULDERS
+  BICEPS
+  TRICEPS
+  LEGS
+  ABS
+  CARDIO
+}
+
+model SessionExercise {
+  id               Int               @id @default(autoincrement())
+  session          Session           @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId        Int
+  customExercise   CustomExercise    @relation(fields: [customExerciseId], references: [id], onDelete: Cascade)
+  customExerciseId Int
+  defaultSets      Int?
+  defaultReps      Int?
+  order            Int               @default(1)
+  workoutTrackings WorkoutTracking[]
+
+  @@unique([sessionId, customExerciseId])
+}
+
+model WorkoutTracking {
+  id                Int             @id @default(autoincrement())
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId            Int
+  sessionExercise   SessionExercise @relation(fields: [sessionExerciseId], references: [id], onDelete: Cascade)
+  sessionExerciseId Int
+  session           Session         @relation("SessionWorkouts", fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId         Int
+  date              DateTime
+  completedSets     Int?
+  completedReps     Int?
+  weight            Decimal?
+  notes             String?
+}
+
+model Favorite {
+  id            Int            @id @default(autoincrement())
+  name          String         @unique
+  type          FavoriteType
+  userFavorites UserFavorite[]
+}
+
+enum FavoriteType {
+  EXERCISE
+  PROGRAM
+  PRODUCT
+  SESSION
+}
+
+model UserFavorite {
+  id         Int      @id @default(autoincrement())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     Int
+  favorite   Favorite @relation(fields: [favoriteId], references: [id], onDelete: Cascade)
+  favoriteId Int
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, favoriteId])
+}
+
+model Cart {
+  id        Int        @id @default(autoincrement())
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int        @unique
+  items     CartItem[]
+  updatedAt DateTime   @updatedAt
+}
+
+model Product {
+  id          Int         @id @default(autoincrement())
+  name        String      @unique
+  description String?
+  basePrice   Decimal
+  stock       Int         @default(0)
+  image_url   String?
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model CartItem {
+  id        Int      @id @default(autoincrement())
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  cartId    Int
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId Int
+  quantity  Int      @default(1)
+  price     Decimal // Prix au moment de l'ajout au panier
+  addedAt   DateTime @default(now())
+
+  @@unique([cartId, productId])
+}
+
+model Order {
+  id        Int         @id @default(autoincrement())
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  items     OrderItem[]
+  orderDate DateTime    @default(now())
+  status    OrderStatus @default(PENDING)
+  total     Decimal
+  address   Address     @relation(fields: [addressId], references: [id])
+  addressId Int
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  CANCELLED
+}
+
+model OrderItem {
+  id        Int      @id @default(autoincrement())
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId   Int
+  product   Product? @relation(fields: [productId], references: [id])
+  productId Int?
+  quantity  Int
+  price     Decimal // Prix au moment de la commande
+}
+
+model Comment {
+  id        Int         @id @default(autoincrement())
+  user      User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId    Int?
+  type      CommentType
+  target_id Int
+  content   String
+  createdAt DateTime    @default(now())
+}
+
+enum CommentType {
+  EXERCISE
+  PROGRAM
+  PRODUCT
+}
+
+model SupportTicket {
+  id        Int             @id @default(autoincrement())
+  user      User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId    Int?
+  subject   String
+  status    TicketStatus    @default(OPEN)
+  messages  TicketMessage[]
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+}
+
+model TicketMessage {
+  id        Int           @id @default(autoincrement())
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  ticketId  Int
+  content   String
+  isStaff   Boolean       @default(false)
+  createdAt DateTime      @default(now())
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  CLOSED
+}

@@ -1,0 +1,2 @@
+/*Trainer Dashboard*/
+'use client'

@@ -1,0 +1,14 @@
+{
+    "projectType": "web",
+    "language": "javascript",
+    "style": {
+      "framework": "tailwind",
+      "componentStyle": "function"
+    },
+    "constraints": [
+      "use Gitbash for terminal",
+      "don't modify or delete .gitignore file",
+      "always give me an clear explaination of the code you write or you modify"
+    ]
+  }
+  
