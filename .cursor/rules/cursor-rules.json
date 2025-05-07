@@ -8,7 +8,10 @@
     "constraints": [
       "use Gitbash for terminal",
       "don't modify or delete .gitignore file",
-      "always give me an clear explaination of the code you write or you modify"
+      "always give me an clear explaination of the code you write or you modify",
+      "i don't use FRONTEND_URL, i use APP_URL",
+      "back\\src\\routes\\index.js has already '/api' in app.route."
+
     ]
   }
   

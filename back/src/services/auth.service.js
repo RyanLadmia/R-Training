@@ -9,6 +9,7 @@ import {
     generatePasswordResetToken,
     verifyToken
 } from '../utils/jwt.js';
+import { sendPasswordResetEmail } from '../utils/email.js';
 
 // Enregistrer un nouvel utilisateur
 async function register(data) {
@@ -22,7 +23,7 @@ async function register(data) {
         });
 
         if (existingUser) {
-            throw new Error('User already exists');
+            throw new Error('Cette adresse email est déjà utilisée');
         }
 
         // Vérifier si le rôle existe
@@ -182,19 +183,68 @@ async function forgotPassword(email) {
     });
 
     if (!user) {
-        throw new Error('Aucun compte associé à cet email');
+        // Pour des raisons de sécurité, on ne révèle pas si l'email existe ou non
+        return { message: 'Si un compte existe avec cet email, vous recevrez les instructions de réinitialisation.' };
     }
 
     const resetToken = generatePasswordResetToken(email);
 
-    // Sauvegarder uniquement le token
+    // Sauvegarder le token
     await prisma.user.update({
         where: { id: user.id },
         data: { resetPasswordToken: resetToken }
     });
 
-    // TODO: Envoyer l'email avec le lien de réinitialisation
-    return { message: 'Instructions envoyées par email' };
+    try {
+        // Envoyer l'email avec le lien de réinitialisation
+        const success = await sendPasswordResetEmail(email, resetToken);
+        
+        if (!success) {
+            throw new Error('Erreur lors de l\'envoi de l\'email de réinitialisation');
+        }
+        
+        return { message: 'Si un compte existe avec cet email, vous recevrez les instructions de réinitialisation.' };
+    } catch (error) {
+        console.error('Erreur lors de l\'envoi de l\'email de réinitialisation:', error);
+        throw new Error('Erreur lors de l\'envoi de l\'email de réinitialisation');
+    }
+}
+
+// Réinitialiser le mot de passe
+async function resetPassword(token, password) {
+    try {
+        // Vérifier le token et son type
+        const decoded = verifyToken(token, 'reset');
+        
+        // Trouver l'utilisateur avec l'email du token et le token de réinitialisation
+        const user = await prisma.user.findFirst({
+            where: { 
+                email: decoded.email,
+                resetPasswordToken: token
+            }
+        });
+
+        if (!user) {
+            throw new Error('Token de réinitialisation invalide ou expiré');
+        }
+
+        // Hacher le nouveau mot de passe
+        const hashedPassword = await hashPassword(password);
+
+        // Mettre à jour l'utilisateur
+        await prisma.user.update({
+            where: { id: user.id },
+            data: { 
+                password: hashedPassword,
+                resetPasswordToken: null // Invalider le token après utilisation
+            }
+        });
+
+        return { message: 'Mot de passe réinitialisé avec succès' };
+    } catch (error) {
+        console.error('Erreur lors de la réinitialisation du mot de passe:', error);
+        throw new Error(error.message || 'Erreur lors de la réinitialisation du mot de passe');
+    }
 }
 
 // Récupérer un utilisateur par son id
@@ -276,10 +326,17 @@ async function getUserRole(userId) {
             }
         });
 
-        if (!userWithRole || !userWithRole.role || !userWithRole.role.role) {
+        if (!userWithRole) {
+            console.error("Utilisateur non trouvé pour le rôle:", userId);
             return 'user'; // Rôle par défaut
         }
 
+        if (!userWithRole.role || !userWithRole.role.role) {
+            console.log("Aucun rôle trouvé pour l'utilisateur, utilisation du rôle par défaut");
+            return 'user';
+        }
+
+        console.log("Rôle trouvé pour l'utilisateur:", userWithRole.role.role.name);
         return userWithRole.role.role.name;
     } catch (error) {
         console.error("Erreur lors de la récupération du rôle:", error);
@@ -291,6 +348,7 @@ export default {
     register, 
     login, 
     forgotPassword, 
+    resetPassword,
     getUserById, 
     getUserProfile, 
     updateUser, 

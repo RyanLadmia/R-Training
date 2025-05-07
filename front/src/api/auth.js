@@ -12,16 +12,21 @@ async function signIn(data) {
         if (!response.data.user) {
             throw new Error('Données utilisateur manquantes');
         }
-        
-        if (!response.data.token) {
-            if (!response.data.accessToken) {
-                throw new Error('Token d\'authentification manquant');
-            }
-            response.data.token = response.data.accessToken;
+
+        // Si l'utilisateur n'est pas vérifié, on retourne un indicateur spécial
+        if (response.data.needsVerification) {
+            return {
+                needsVerification: true,
+                message: "Un email vous a été envoyé pour confirmer votre adresse email."
+            };
         }
         
         return response.data;
     } catch (error) {
+        // Si l'erreur concerne la vérification de l'email, on la propage telle quelle
+        if (error.response?.data?.error === 'Veuillez vérifier votre email avant de vous connecter') {
+            throw error;
+        }
         console.error("Error during sign in:", error.response ? error.response.data : error.message);
         throw error;
     }
@@ -52,7 +57,33 @@ async function updateProfile(userId, data) {
     }
 }
 
-export async function verifyEmail(token) {
+async function getCurrentUser() {
+    try {
+        const response = await instance.get('/me');
+        return response.data;
+    } catch (error) {
+        if (error.response && error.response.status === 401) {
+            // Si l'erreur est 401, c'est normal quand l'utilisateur n'est pas connecté
+            // On retourne null au lieu de lancer une erreur
+            return null;
+        }
+        // Pour les autres erreurs, on les log et on les propage
+        console.error("Erreur lors de la récupération de l'utilisateur:", error.response?.data || error.message);
+        throw error;
+    }
+}
+
+async function logoutUser() {
+    try {
+        const response = await instance.post('/logout');
+        return response.data;
+    } catch (error) {
+        console.error("Erreur lors de la déconnexion:", error.response?.data || error.message);
+        throw error;
+    }
+}
+
+async function verifyEmail(token) {
     try {
         const response = await instance.get(`/verify-email/${token}`);
         return response.data;
@@ -62,4 +93,37 @@ export async function verifyEmail(token) {
     }
 }
 
-export { signIn, signUp, updateProfile };
+async function forgotPassword(email) {
+    try {
+        const response = await instance.post('/forgot-password', { email });
+        return response.data;
+    } catch (error) {
+        console.error("Erreur lors de la demande de réinitialisation:", error.response?.data?.error || error.message);
+        throw error;
+    }
+}
+
+async function resetPassword(token, password, confirmPassword) {
+    try {
+        const response = await instance.post('/reset-password', {
+            token,
+            password,
+            confirmPassword
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Erreur lors de la réinitialisation du mot de passe:", error.response?.data?.error || error.message);
+        throw error;
+    }
+}
+
+export { 
+    signIn, 
+    signUp, 
+    updateProfile, 
+    getCurrentUser, 
+    logoutUser, 
+    verifyEmail,
+    forgotPassword, 
+    resetPassword 
+};

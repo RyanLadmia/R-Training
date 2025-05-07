@@ -2,15 +2,18 @@ import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { authGuard } from '../middlewares/authguard.js'
+import authService from '../services/auth.service.js'
 import {
     register,
     login,
+    logout,
     forgotPassword,
     getUserProfile,
     sendVerificationEmail,
     resetPassword,
     verifyEmail as verifyUserEmail,
-    updateUserProfile
+    updateUserProfile,
+    getCurrentUser
 } from '../controllers/auth.controller.js'
 
 const authRoutes = new Hono()
@@ -52,6 +55,47 @@ authRoutes.post(
         })
     ),
     login
+);
+
+// Déconnexion
+authRoutes.post(
+    "/logout",
+    authGuard(),
+    logout
+);
+
+// Récupérer l'utilisateur courant
+authRoutes.get(
+    "/me",
+    authGuard(),
+    async (c) => {
+        try {
+            const user = c.get('user');
+            if (!user) {
+                return c.json({ error: "Utilisateur non authentifié" }, 401);
+            }
+
+            // Récupérer le rôle de l'utilisateur
+            const userRole = await authService.getUserRole(user.id);
+
+            // Ne pas renvoyer le mot de passe
+            const userData = { ...user };
+            delete userData.password;
+
+            return c.json({ 
+                user: {
+                    ...userData,
+                    role: userRole
+                }
+            });
+        } catch (error) {
+            console.error("Erreur dans la route /me:", error);
+            return c.json({ 
+                error: "Erreur lors de la récupération des informations utilisateur",
+                details: process.env.NODE_ENV === 'development' ? error.message : undefined 
+            }, 500);
+        }
+    }
 );
 
 authRoutes.post(
@@ -127,6 +171,26 @@ authRoutes.put(
         })
     ),
     updateUserProfile
+);
+
+// Récupération du profil de l'utilisateur courant
+authRoutes.get(
+    "/user/profile",
+    authGuard(),
+    (c) => {
+        const user = c.get('user');
+        if (!user) {
+            return c.json({ error: "Utilisateur non authentifié" }, 401);
+        }
+        
+        // Ne pas renvoyer le mot de passe
+        const userData = { ...user };
+        delete userData.password;
+        
+        return c.json({ 
+            user: userData
+        });
+    }
 );
 
 export default authRoutes;

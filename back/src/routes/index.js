@@ -9,7 +9,7 @@ app.get('/', (c) => c.text('Hello from Hono!'))
 app.route('/api', authRoutes)
 app.route('/api', adminRoutes)
 app.get(
-    '/authenticated',
+    '/api/authenticated',
     authGuard(),
     (c) => {
         const user = c.get('user')

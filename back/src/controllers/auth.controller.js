@@ -27,15 +27,53 @@ async function login(c) {
         const authResult = await authService.login(email, password)
         console.log("Auth result:", authResult)
 
+        // Définir le token d'accès comme cookie HTTP-only
+        const cookieOptions = [
+            `accessToken=${authResult.token}`,
+            'HttpOnly',
+            process.env.NODE_ENV === 'production' ? 'Secure' : '',
+            'SameSite=Lax',
+            `Max-Age=${60 * 60}`, // 1 heure en secondes
+            'Path=/'
+        ].filter(Boolean).join('; ');
+
+        c.header('Set-Cookie', cookieOptions);
+
+        // Ne pas renvoyer le token dans la réponse JSON
         return c.json({ 
-            message: 'login successful', 
-            token: authResult.token,
-            user: authResult.user,
-            accessToken: authResult.token
+            message: 'login successful',
+            user: authResult.user
         })
     } catch (error) {
         console.log("error:", error.message)
         return c.json({ error: error.message}, 400)
+    }
+}
+
+// Déconnexion
+async function logout(c) {
+    try {
+        // Supprimer le cookie d'authentification
+        const cookieOptions = [
+            'accessToken=',
+            'HttpOnly',
+            process.env.NODE_ENV === 'production' ? 'Secure' : '',
+            'SameSite=Lax',
+            'Max-Age=0', // Expire immédiatement
+            'Path=/'
+        ].filter(Boolean).join('; ');
+
+        c.header('Set-Cookie', cookieOptions);
+        
+        return c.json({ 
+            message: 'Déconnexion réussie'
+        });
+    } catch (error) {
+        console.error("Erreur lors de la déconnexion:", error);
+        return c.json({ 
+            error: "Erreur lors de la déconnexion",
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        }, 500);
     }
 }
 
@@ -134,8 +172,8 @@ async function sendVerificationEmail(c) {
 // Réinitialiser le mot de passe
 async function resetPassword(c) {
     try {
-        const { token, newPassword } = c.req.valid('json')
-        await authService.resetPassword(token, newPassword)
+        const { token, password } = c.req.valid('json')
+        await authService.resetPassword(token, password)
         return c.json({
             message: "Password reset succesful"
         })
@@ -241,16 +279,50 @@ async function updateUserProfile(c) {
     }
 }
 
+// Récupérer les informations de l'utilisateur courant
+async function getCurrentUser(c) {
+    try {
+        // L'utilisateur est déjà vérifié par authGuard
+        const user = c.get('user');
+        
+        if (!user) {
+            return c.json({ error: "Utilisateur non authentifié" }, 401);
+        }
+        
+        // Récupérer le rôle de l'utilisateur
+        const userRole = await authService.getUserRole(user.id);
+        
+        // Ne pas renvoyer le mot de passe
+        const userData = { ...user };
+        delete userData.password;
+        
+        return c.json({ 
+            user: {
+                ...userData,
+                role: userRole
+            }
+        });
+    } catch (error) {
+        console.error("Erreur lors de la récupération des informations utilisateur:", error);
+        return c.json({ 
+            error: "Erreur lors de la récupération des informations utilisateur",
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined 
+        }, 500);
+    }
+}
+
 export {
     register,
     login,
+    logout,
     forgotPassword,
     getUserId,
     getUserProfile,
     sendVerificationEmail,
     resetPassword,
     verifyEmail,
-    updateUserProfile
+    updateUserProfile,
+    getCurrentUser
 }
 
 

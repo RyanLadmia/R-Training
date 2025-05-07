@@ -15,7 +15,7 @@ export async function get_profile_user_by_id(userId) {
 // Mettre à jour le profil utilisateur
 export async function update_profile(userId, data) {
   try {
-    const response = await instance.put(`/auth/user/${userId}`, data);
+    const response = await instance.put(`/user/${userId}`, data);
     return response.data;
   } catch (error) {
     console.error("Erreur lors de la mise à jour du profil:", error.response?.data || error.message);

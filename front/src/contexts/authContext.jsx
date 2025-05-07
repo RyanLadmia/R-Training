@@ -1,4 +1,5 @@
 import { createContext, useState, useEffect, useContext } from 'react';
+import { getCurrentUser, logoutUser } from '../api/auth';
 
 // Créer le contexte
 export const AuthContext = createContext();
@@ -14,24 +15,32 @@ export function AuthProvider({ children }) {
   
   // Vérifier l'état d'authentification au chargement
   useEffect(() => {
-    const checkAuth = () => {
-      const token = localStorage.getItem('accessToken');
-      const userId = localStorage.getItem('userId');
-      const storedUserData = localStorage.getItem('userData');
-      
-      setIsAuthenticated(!!token);
-      
-      if (storedUserData) {
-        try {
-          const userData = JSON.parse(storedUserData);
-          setUser(userData);
-          setUserRole(userData.role);
-        } catch (e) {
-          console.error('Erreur lors de la lecture des données utilisateur:', e);
+    const checkAuth = async () => {
+      try {
+        const userData = await getCurrentUser();
+        
+        if (userData && userData.user) {
+          setIsAuthenticated(true);
+          setUser(userData.user);
+          setUserRole(userData.user.role);
+        } else {
+          // Réinitialisation silencieuse de l'état
+          setIsAuthenticated(false);
+          setUser(null);
+          setUserRole(null);
         }
+      } catch (error) {
+        // Ne rien logger pour les erreurs 401
+        if (!error.response || error.response.status !== 401) {
+          console.error("Erreur lors de la vérification de l'authentification:", error);
+        }
+        // Réinitialisation silencieuse de l'état
+        setIsAuthenticated(false);
+        setUser(null);
+        setUserRole(null);
+      } finally {
+        setLoading(false);
       }
-      
-      setLoading(false);
     };
     
     checkAuth();
@@ -45,29 +54,37 @@ export function AuthProvider({ children }) {
   }, []);
   
   // Fonction de connexion
-  const login = (token, userData) => {
-    localStorage.setItem('accessToken', token);
-    
-    if (userData) {
-      localStorage.setItem('userData', JSON.stringify(userData));
-      localStorage.setItem('userId', userData.id);
+  const login = async (userData) => {
+    try {
       setUser(userData);
       setUserRole(userData.role);
+      setIsAuthenticated(true);
+      window.dispatchEvent(new Event('authChange'));
+    } catch (error) {
+      if (!error.response || error.response.status !== 401) {
+        console.error('Erreur lors de la connexion:', error);
+      }
+      setIsAuthenticated(false);
+      setUser(null);
+      setUserRole(null);
     }
-    
-    setIsAuthenticated(true);
-    window.dispatchEvent(new Event('authChange'));
   };
   
   // Fonction de déconnexion
-  const logout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('userData');
-    localStorage.removeItem('userId');
-    setIsAuthenticated(false);
-    setUser(null);
-    setUserRole(null);
-    window.dispatchEvent(new Event('authChange'));
+  const logout = async () => {
+    try {
+      await logoutUser();
+    } catch (error) {
+      // Ne logger que les erreurs non liées à l'authentification
+      if (!error.response || error.response.status !== 401) {
+        console.error('Erreur lors de la déconnexion:', error);
+      }
+    } finally {
+      setIsAuthenticated(false);
+      setUser(null);
+      setUserRole(null);
+      window.dispatchEvent(new Event('authChange'));
+    }
   };
   
   // Vérifier si l'utilisateur a un rôle spécifique

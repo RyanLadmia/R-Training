@@ -6,7 +6,15 @@ import env from './config/env.js'
 
 const app = new Hono()
 
-app.use('/api/*', cors())
+app.use('/api/*', cors({
+  origin: env.NODE_ENV === 'production' 
+    ? env.FRONTEND_URL 
+    : ['http://localhost:5173', 'http://localhost:5174'],
+  credentials: true, // Permet l'envoi de cookies avec les requêtes
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization']
+}))
+
 app.route('/', router)
 
 const port = env.PORT

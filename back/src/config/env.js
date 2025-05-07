@@ -27,6 +27,7 @@ if (result.error) {
 const envSchema = z.object({
     PORT: z.coerce.number().min(1000),
     APP_URL: z.string(),
+    FRONTEND_URL: z.string().url().default('http://localhost:5173'), // URL du frontend
     JWT_SECRET: z.string().min(32, "JWT_SECRET doit contenir au moins 32 caractères"),
     JWT_EXPIRES_IN: z.coerce.number().default(60 * 24),
     

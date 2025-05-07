@@ -3,6 +3,8 @@ import Header from './layout/header'
 import Home from './page/home'
 import Login from './page/login'
 import Register from './page/register'
+import ForgotPassword from './page/forgot-password'
+import ResetPassword from './page/reset-password'
 import ExercisesList from './page/exercises-list'
 import VerifyEmail from './page/verify-email'
 import AdminProfile from './page/admin/profile'
@@ -24,6 +26,8 @@ function App() {
           <Route path="/auth">
             <Route path="login" element={<Login />} />
             <Route path="register" element={<Register />} />
+            <Route path="forgot-password" element={<ForgotPassword />} />
+            <Route path="reset-password" element={<ResetPassword />} />
           </Route>
           {/* Route de vérification d'email */}
           <Route path="/verify-email/:token" element={<VerifyEmail />} />

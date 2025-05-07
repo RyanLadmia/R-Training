@@ -28,18 +28,23 @@ export async function sendVerificationEmail(userEmail, verificationToken) {
 }
 
 export async function sendPasswordResetEmail(email, resetToken) {
-  const verificationUrl = `${env.APP_URL}/reset-password?token=${resetToken}`
+  const resetUrl = `${process.env.APP_URL || 'http://localhost:5174'}/auth/reset-password?token=${resetToken}`
   const html = `
-        <h1>Reset password</h1>
-        <p>Please click the link below to reset your password:</p>
-        <a href="${verificationUrl}">Reset password</a>
-        <p>This link will expire in 24 hours.</p>
+        <h1>Réinitialisation de mot de passe</h1>
+        <p>Bonjour,</p>
+        <p>Vous avez demandé la réinitialisation de votre mot de passe. Cliquez sur le lien ci-dessous pour procéder :</p>
+        <a href="${resetUrl}" style="display: inline-block; padding: 10px 20px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">
+            Réinitialiser mon mot de passe
+        </a>
+        <p>Ce lien expirera dans 1 heure.</p>
+        <p>Si vous n'avez pas demandé cette réinitialisation, vous pouvez ignorer cet email.</p>
+        <p>À bientôt !</p>
       `
   try {
-    await sendEmail(email, 'Verify your email address', html)
+    await sendEmail(email, 'Réinitialisation de votre mot de passe', html)
     return true
   } catch (error) {
-    console.error('Error sending verification email:', error)
+    console.error('Error sending reset password email:', error)
     return false
   }
 }
