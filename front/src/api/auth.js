@@ -3,11 +3,23 @@ import instance from './config';
 async function signIn(data) {
     try {
         const response = await instance.post('/login', data);
-        if (response.status !== 200 || !response.data.token) {
-            throw new Error('Failed to sign in');
+        console.log("Response from sign in:", response.data);
+        
+        if (response.status !== 200) {
+            throw new Error('Échec de la connexion');
         }
-        console.log("Response from sign in:", response);
-        localStorage.setItem('accessToken', response.data.token);
+        
+        if (!response.data.user) {
+            throw new Error('Données utilisateur manquantes');
+        }
+        
+        if (!response.data.token) {
+            if (!response.data.accessToken) {
+                throw new Error('Token d\'authentification manquant');
+            }
+            response.data.token = response.data.accessToken;
+        }
+        
         return response.data;
     } catch (error) {
         console.error("Error during sign in:", error.response ? error.response.data : error.message);

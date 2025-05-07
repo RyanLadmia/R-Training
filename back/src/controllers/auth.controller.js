@@ -24,12 +24,17 @@ async function register(c) {
 async function login(c) {
     try {
         const { email, password } = c.req.valid('json')
-        const token = await authService.login(email, password)
-        console.log("token:", token)
+        const authResult = await authService.login(email, password)
+        console.log("Auth result:", authResult)
 
-        return c.json({ message: 'login succesful', token})
+        return c.json({ 
+            message: 'login successful', 
+            token: authResult.token,
+            user: authResult.user,
+            accessToken: authResult.token
+        })
     } catch (error) {
-        console.log("error:",error.message)
+        console.log("error:", error.message)
         return c.json({ error: error.message}, 400)
     }
 }

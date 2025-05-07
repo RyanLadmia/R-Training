@@ -1,9 +1,10 @@
 import { verify } from "hono/jwt";
+import { createMiddleware } from "hono/factory";
 import env from "../config/env.js";
 import authService from "../services/auth.service.js";
 
 export function authGuard() {
-    return async (c, next) => {
+    return createMiddleware (async (c, next) => {
         const [prefix, token] = c.req.header("Authorization")?.split(" ") || [
             null,
             undefined,
@@ -32,7 +33,7 @@ export function authGuard() {
                 error: "Internal server error" 
             }, 500);
         } 
-    };
+    });
 }
 
 export function roleMiddleware(requiredRole) {

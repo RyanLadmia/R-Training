@@ -1,17 +1,15 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
-import { secureHeaders } from 'hono/secure-headers'
-import { prettyJSON } from 'hono/pretty-json'
-import { logger } from 'hono/logger'
-import { jwt } from 'hono/jwt'
 import router from './routes/index.js'
-import env from "./config/env.js";
+import env from './config/env.js'
 
 const app = new Hono()
 
 app.use('/api/*', cors())
 app.route('/', router)
+
+const port = env.PORT
 
 // Log pour vérifier les variables d'environnement
 console.log('Variables d\'environnement chargées :', {
@@ -23,7 +21,6 @@ console.log('Variables d\'environnement chargées :', {
 });
 
 // Utiliser la variable d'environnement PORT depuis le fichier .env
-const port = env.PORT
 console.log(`Server is running on http://localhost:${port}`)
 
 serve({

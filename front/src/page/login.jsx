@@ -4,20 +4,40 @@
 import { signIn } from "@/api/auth"
 import { useMutation } from "@tanstack/react-query"
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '@/contexts/authContext'
 import LoginForm from '@/components/auth/LoginForm'
 
 const LoginPage = () => {
   const navigate = useNavigate()
+  const { login: authLogin } = useAuth()
 
   const loginMutation = useMutation({
     mutationFn: async (data) => {
       return await signIn(data)
     },
     onSuccess: (data) => {
-      // Stocker le token dans le localStorage
-      localStorage.setItem('accessToken', data.token)
-      // Redirection vers le dashboard ou la page d'accueil
-      navigate('/')
+      console.log("Données de réponse:", data);
+      
+      // Vérifier que les données utilisateur existent
+      if (!data.user) {
+        console.error("Données utilisateur manquantes dans la réponse");
+        return;
+      }
+      
+      // Stocker l'ID utilisateur pour les requêtes futures
+      localStorage.setItem('userId', data.user.id);
+      
+      // Utiliser la fonction login du contexte d'authentification
+      authLogin(data.token, data.user);
+      
+      // Rediriger l'utilisateur selon son rôle
+      if (data.user.role === 'admin') {
+        navigate('/admin/profile');
+      } else if (data.user.role === 'trainer') {
+        navigate('/trainer/profile');
+      } else {
+        navigate('/user/profile');
+      }
     },
     onError: (error) => {
       // L'erreur sera gérée par le composant de formulaire

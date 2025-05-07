@@ -116,17 +116,24 @@ async function login(email, password) {
         throw new Error('Veuillez vérifier votre email avant de vous connecter');
     }
 
+    // Récupérer le rôle de l'utilisateur
+    const userRole = await getUserRole(user.id);
+    
+    // Générer les tokens d'authentification
     const tokens = generateAuthTokens(user);
 
+    console.log("Tokens générés:", tokens);
+
+    // Structurer la réponse pour inclure clairement le token
     return {
         user: {
             id: user.id,
             firstname: user.firstname,
             lastname: user.lastname,
             email: user.email,
-            role: user.role?.role?.name
+            role: userRole
         },
-        ...tokens
+        token: tokens.accessToken  // Utiliser accessToken au lieu de token
     };
 }
 
@@ -255,6 +262,31 @@ async function findUserByEmail(email) {
     });
 }
 
+// Récupérer le rôle d'un utilisateur
+async function getUserRole(userId) {
+    try {
+        const userWithRole = await prisma.user.findUnique({
+            where: { id: userId },
+            include: {
+                role: {
+                    include: {
+                        role: true
+                    }
+                }
+            }
+        });
+
+        if (!userWithRole || !userWithRole.role || !userWithRole.role.role) {
+            return 'user'; // Rôle par défaut
+        }
+
+        return userWithRole.role.role.name;
+    } catch (error) {
+        console.error("Erreur lors de la récupération du rôle:", error);
+        return 'user'; // Rôle par défaut en cas d'erreur
+    }
+}
+
 export default { 
     register, 
     login, 
@@ -264,5 +296,6 @@ export default {
     updateUser, 
     sendEmailVerification, 
     findUserByEmail, 
-    verifyEmail 
+    verifyEmail,
+    getUserRole
 };

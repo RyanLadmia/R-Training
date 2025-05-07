@@ -5,7 +5,10 @@ import Login from './page/login'
 import Register from './page/register'
 import ExercisesList from './page/exercises-list'
 import VerifyEmail from './page/verify-email'
-
+import AdminProfile from './page/admin/profile'
+import UserProfile from './page/user/profile'
+import { RoleGuard, AuthGuard } from './components/auth/RouteGuard'
+import Unauthorized from './page/unauthorized'
 
 function App() {
   return (
@@ -24,6 +27,20 @@ function App() {
           </Route>
           {/* Route de vérification d'email */}
           <Route path="/verify-email/:token" element={<VerifyEmail />} />
+          {/* Route d'accès non autorisé */}
+          <Route path="/unauthorized" element={<Unauthorized />} />
+          {/* Routes protégées par rôle */}
+          <Route path="/admin/profile" element={
+            <RoleGuard allowedRoles="admin">
+              <AdminProfile />
+            </RoleGuard>
+          } />
+          
+          <Route path="/user/profile" element={
+            <AuthGuard>
+              <UserProfile />
+            </AuthGuard>
+          } />
           {/*
           <Route path="/profile" element={<Profile />} />
           */}
