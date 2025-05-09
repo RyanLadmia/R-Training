@@ -1,5 +1,7 @@
 import authService from "../services/auth.service.js";
 
+// Controller de l'authentification :
+
 // Inscription
 async function register(c) {
     try {
