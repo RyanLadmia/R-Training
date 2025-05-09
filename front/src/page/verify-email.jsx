@@ -42,9 +42,10 @@ export default function VerifyEmail() {
       setEmail('')
     },
     onError: (error) => {
+      const errorMessage = error instanceof Error ? error.message : 'Une erreur est survenue'
       toast({
         title: "Erreur",
-        description: error.response?.data?.error || "Une erreur est survenue lors de l'envoi de l'email",
+        description: errorMessage,
         variant: "destructive"
       })
     }
@@ -66,6 +67,18 @@ export default function VerifyEmail() {
       })
       return
     }
+    
+    // Validation du format de l'email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      toast({
+        title: "Erreur",
+        description: "Format d'email invalide",
+        variant: "destructive"
+      })
+      return
+    }
+    
     resendEmailMutation.mutate()
   }
 

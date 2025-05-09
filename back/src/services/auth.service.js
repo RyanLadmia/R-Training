@@ -114,7 +114,31 @@ async function login(email, password) {
     }
 
     if (!user.isVerified) {
-        throw new Error('Veuillez vérifier votre email avant de vous connecter');
+        // Générer un nouveau token de vérification
+        const emailVerificationToken = generateEmailVerificationToken(email);
+        
+        // Mettre à jour le token de vérification
+        await prisma.user.update({
+            where: { id: user.id },
+            data: { emailVerificationToken }
+        });
+        
+        // Envoyer l'email de vérification
+        const emailSent = await sendVerificationEmailUtil(email, emailVerificationToken);
+        
+        if (!emailSent) {
+            // Si l'envoi échoue, on renvoie quand même un message positif
+            // car le token a été mis à jour et l'utilisateur peut utiliser le lien de renvoi
+            return {
+                needsVerification: true,
+                message: "Votre compte n'est pas encore vérifié. Veuillez vérifier vos emails ou utiliser l'option 'Renvoyer le lien de vérification' si vous n'avez pas reçu l'email."
+            };
+        }
+
+        return {
+            needsVerification: true,
+            message: "Un email de vérification vient de vous être envoyé. Veuillez vérifier votre boîte de réception et cliquer sur le lien pour activer votre compte."
+        };
     }
 
     // Récupérer le rôle de l'utilisateur
@@ -122,8 +146,6 @@ async function login(email, password) {
     
     // Générer les tokens d'authentification
     const tokens = generateAuthTokens(user);
-
-    console.log("Tokens générés:", tokens);
 
     // Structurer la réponse pour inclure clairement le token
     return {
@@ -134,7 +156,7 @@ async function login(email, password) {
             email: user.email,
             role: userRole
         },
-        token: tokens.accessToken  // Utiliser accessToken au lieu de token
+        token: tokens.accessToken
     };
 }
 
@@ -185,8 +207,7 @@ async function forgotPassword(email) {
     });
 
     if (!user) {
-        // Pour des raisons de sécurité, on ne révèle pas si l'email existe ou non
-        return { message: 'Si un compte existe avec cet email, vous recevrez les instructions.' };
+        throw new Error('Aucun compte n\'existe avec cette adresse email');
     }
 
     const resetToken = generatePasswordResetToken(email);
