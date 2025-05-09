@@ -7,9 +7,12 @@
   },
   "constraints": [
     "use Gitbash for terminal",
+    "server backend is running on port 3003",
+    "server frontend is running on port 5174",
+    "I don't want my server url in the code, i want to use APP_URL for frontend and PORT for backend in back\\.env and VITE_APP_URL for frontend in front\\.env",
     "don't modify or delete .gitignore file",
     "always give me an clear explaination of the code you write or you modify",
-    "i don't use FRONTEND_URL, i use APP_URL",
+    "i don't use FRONTEND_URL or , i use APP_URL the frontend url",
     "back\\src\\routes\\index.js has already '/api' in app.route."
   ],
   "notes": {

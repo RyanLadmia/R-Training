@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect, useContext } from 'react';
-import { getCurrentUser, logoutUser } from '../api/auth';
+import { logoutUser } from '../api/auth';
 
 // Créer le contexte
 export const AuthContext = createContext();
@@ -11,47 +11,7 @@ export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
   const [userRole, setUserRole] = useState(null);
-  const [loading, setLoading] = useState(true);
-  
-  // Vérifier l'état d'authentification au chargement
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const userData = await getCurrentUser();
-        
-        if (userData && userData.user) {
-          setIsAuthenticated(true);
-          setUser(userData.user);
-          setUserRole(userData.user.role);
-        } else {
-          // Réinitialisation silencieuse de l'état
-          setIsAuthenticated(false);
-          setUser(null);
-          setUserRole(null);
-        }
-      } catch (error) {
-        // Ne rien logger pour les erreurs 401
-        if (!error.response || error.response.status !== 401) {
-          console.error("Erreur lors de la vérification de l'authentification:", error);
-        }
-        // Réinitialisation silencieuse de l'état
-        setIsAuthenticated(false);
-        setUser(null);
-        setUserRole(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    checkAuth();
-    
-    // Écouter les changements d'authentification
-    window.addEventListener('authChange', checkAuth);
-    
-    return () => {
-      window.removeEventListener('authChange', checkAuth);
-    };
-  }, []);
+  const [loading, setLoading] = useState(false);
   
   // Fonction de connexion
   const login = async (userData) => {
@@ -61,9 +21,7 @@ export function AuthProvider({ children }) {
       setIsAuthenticated(true);
       window.dispatchEvent(new Event('authChange'));
     } catch (error) {
-      if (!error.response || error.response.status !== 401) {
-        console.error('Erreur lors de la connexion:', error);
-      }
+      console.error('Erreur lors de la connexion:', error);
       setIsAuthenticated(false);
       setUser(null);
       setUserRole(null);
@@ -75,10 +33,7 @@ export function AuthProvider({ children }) {
     try {
       await logoutUser();
     } catch (error) {
-      // Ne logger que les erreurs non liées à l'authentification
-      if (!error.response || error.response.status !== 401) {
-        console.error('Erreur lors de la déconnexion:', error);
-      }
+      console.error('Erreur lors de la déconnexion:', error);
     } finally {
       setIsAuthenticated(false);
       setUser(null);

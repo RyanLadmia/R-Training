@@ -11,6 +11,7 @@ import AdminProfile from './page/admin/profile'
 import UserProfile from './page/user/profile'
 import { RoleGuard, AuthGuard } from './components/auth/RouteGuard'
 import Unauthorized from './page/unauthorized'
+import { Toaster } from './components/ui/toaster'
 
 function App() {
   return (
@@ -28,9 +29,8 @@ function App() {
             <Route path="register" element={<Register />} />
             <Route path="forgot-password" element={<ForgotPassword />} />
             <Route path="reset-password" element={<ResetPassword />} />
+            <Route path="verify-email/:token" element={<VerifyEmail />} />
           </Route>
-          {/* Route de vérification d'email */}
-          <Route path="/verify-email/:token" element={<VerifyEmail />} />
           {/* Route d'accès non autorisé */}
           <Route path="/unauthorized" element={<Unauthorized />} />
           {/* Routes protégées par rôle */}
@@ -51,7 +51,7 @@ function App() {
         </Routes>
       </main>
       
-      {/* Ici vous pourriez ajouter un Footer global */}
+      <Toaster />
     </div>
   )
 }

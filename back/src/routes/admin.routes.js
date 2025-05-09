@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { authGuard } from '../middlewares/authguard.js'
-import { adminService } from '../services/admin.service.js'
+import adminService from '../services/admin.service.js'
 import {
     getAdminProfileById,
     updateAdminProfile,

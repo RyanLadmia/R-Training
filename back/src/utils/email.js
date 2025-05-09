@@ -9,7 +9,7 @@ import { sendEmail } from './mailer.js'
  * @returns Promise<boolean> True if email was sent successfully
  */
 export async function sendVerificationEmail(userEmail, verificationToken) {
-  const verificationUrl = `${process.env.APP_URL || 'http://localhost:5174'}/verify-email/${verificationToken}`
+  const verificationUrl = `${env.APP_URL}/auth/verify-email/${verificationToken}`
   const html = `
         <h1>Vérification de l'email</h1>
         <p>Bienvenue ! Pour activer votre compte, veuillez cliquer sur le lien ci-dessous :</p>
@@ -28,7 +28,7 @@ export async function sendVerificationEmail(userEmail, verificationToken) {
 }
 
 export async function sendPasswordResetEmail(email, resetToken) {
-  const resetUrl = `${process.env.APP_URL || 'http://localhost:5174'}/auth/reset-password?token=${resetToken}`
+  const resetUrl = `${env.APP_URL}/auth/reset-password?token=${resetToken}`
   const html = `
         <h1>Réinitialisation de mot de passe</h1>
         <p>Bonjour,</p>
