@@ -6,12 +6,13 @@ import { useMutation } from "@tanstack/react-query"
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/authContext'
 import LoginForm from '@/components/auth/LoginForm'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 
 const LoginPage = () => {
   const navigate = useNavigate()
   const { login: authLogin } = useAuth()
   const [verificationMessage, setVerificationMessage] = useState(null)
+  const loginFormRef = useRef(null)
 
   const loginMutation = useMutation({
     mutationFn: async (data) => {
@@ -50,6 +51,8 @@ const LoginPage = () => {
         setVerificationMessage("Un email vous a été envoyé pour confirmer votre adresse email.");
       } else {
         console.error("Erreur de connexion:", error);
+        // Appeler la fonction setServerErrors du LoginForm
+        loginFormRef.current?.setServerErrors(error);
       }
     }
   })
@@ -67,6 +70,7 @@ const LoginPage = () => {
         </div>
       )}
       <LoginForm 
+        ref={loginFormRef}
         onLogin={handleLogin} 
         isPending={loginMutation.isPending} 
       />

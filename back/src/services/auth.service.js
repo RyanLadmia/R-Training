@@ -254,40 +254,6 @@ async function getUserById(id) {
     });
 }
 
-// Récupérer le profile d'un utilisateur
-async function getUserProfile(id) {
-    const user = await prisma.user.findUnique({
-        where: { id },
-        select: {
-            id: true,
-            firstname: true,
-            lastname: true,
-            email: true,
-            birthDate: true,
-            phoneNumber: true,
-            createdAt: true,
-            updatedAt: true
-        }
-    });
-
-    if (!user) return null;
-
-    return {
-        ...user,
-        birthDate: user.birthDate ? formatDate(user.birthDate) : null,
-        createdAt: formatDateTime(user.createdAt),
-        updatedAt: formatDateTime(user.updatedAt)
-    };
-}
-
-// Modifier le profile d'un utilisateur
-async function updateUser(id, data) {
-    return await prisma.user.update({
-        where: { id },
-        data
-    });
-}
-
 // Envoyer un email de vérification
 async function sendEmailVerification(email) {
     // Vérifier si l'utilisateur existe
@@ -349,9 +315,7 @@ export default {
     login, 
     forgotPassword, 
     resetPassword,
-    getUserById, 
-    getUserProfile, 
-    updateUser, 
+    getUserById,
     sendEmailVerification, 
     findUserByEmail, 
     verifyEmail,

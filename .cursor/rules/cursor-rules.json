@@ -1,17 +1,21 @@
 {
-    "projectType": "web",
-    "language": "javascript",
-    "style": {
-      "framework": "tailwind",
-      "componentStyle": "function"
-    },
-    "constraints": [
-      "use Gitbash for terminal",
-      "don't modify or delete .gitignore file",
-      "always give me an clear explaination of the code you write or you modify",
-      "i don't use FRONTEND_URL, i use APP_URL",
-      "back\\src\\routes\\index.js has already '/api' in app.route."
-
-    ]
+  "projectType": "web",
+  "language": "javascript",
+  "style": {
+    "framework": "tailwind",
+    "componentStyle": "function"
+  },
+  "constraints": [
+    "use Gitbash for terminal",
+    "don't modify or delete .gitignore file",
+    "always give me an clear explaination of the code you write or you modify",
+    "i don't use FRONTEND_URL, i use APP_URL",
+    "back\\src\\routes\\index.js has already '/api' in app.route."
+  ],
+  "notes": {
+    "authFiles": "The following files (auth.service.js, auth.controller.js, auth.routes.js, auth.js) manage all authentication-related features such as registration, login, email verification, forgotten password, password reset, and role retrieval.",
+    "adminFiles": "The following files (admin.service.js, admin.controller.js, admin.routes.js, admin.js) manage admin-related functionalities including viewing and updating the admin profile, listing all users (regardless of role), viewing individual user profiles, editing and deleting user profiles.",
+    "userFiles": "The following files (user.service.js, user.controller.js, user.routes.js, user.js) manage features available to ordinary users, such as profile display and modification.",
+    "trainerFiles": "The following files (trainer.service.js, trainer.controller.js, trainer.routes.js, trainer.js) handle functionalities specific to coaches/trainers, including their profile management and potentially client handling."
   }
-  
+}

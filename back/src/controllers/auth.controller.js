@@ -27,14 +27,14 @@ async function login(c) {
         const authResult = await authService.login(email, password)
         console.log("Auth result:", authResult)
 
-        // Définir le token d'accès comme cookie HTTP-only
+        // Définir le token d'accès comme cookie HTTP-only avec des options de sécurité renforcées
         const cookieOptions = [
             `accessToken=${authResult.token}`,
             'HttpOnly',
-            process.env.NODE_ENV === 'production' ? 'Secure' : '',
-            'SameSite=Lax',
+            'Secure',
+            'SameSite=Strict',
             `Max-Age=${60 * 60}`, // 1 heure en secondes
-            'Path=/'
+            'Path=/',
         ].filter(Boolean).join('; ');
 
         c.header('Set-Cookie', cookieOptions);
@@ -53,12 +53,12 @@ async function login(c) {
 // Déconnexion
 async function logout(c) {
     try {
-        // Supprimer le cookie d'authentification
+        // Supprimer le cookie d'authentification avec les mêmes options de sécurité
         const cookieOptions = [
             'accessToken=',
             'HttpOnly',
-            process.env.NODE_ENV === 'production' ? 'Secure' : '',
-            'SameSite=Lax',
+            'Secure',
+            'SameSite=Strict',
             'Max-Age=0', // Expire immédiatement
             'Path=/'
         ].filter(Boolean).join('; ');
