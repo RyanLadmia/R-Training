@@ -3,28 +3,24 @@ import instance from './config';
 async function signIn(data) {
     try {
         const response = await instance.post('/login', data);
-        
-        if (response.status !== 200) {
-            throw new Error('Échec de la connexion');
-        }
-        
-        if (!response.data.user) {
-            throw new Error('Données utilisateur manquantes');
-        }
-
-        if (response.data.needsVerification) {
-            return {
-                needsVerification: true,
-                message: "Un email vous a été envoyé pour confirmer votre adresse email."
-            };
-        }
-        
         return response.data;
     } catch (error) {
-        if (error.response?.data?.error === 'Veuillez vérifier votre email avant de vous connecter') {
-            throw error;
+        console.log('Détails de l\'erreur:', {
+            status: error.response?.status,
+            data: error.response?.data,
+            message: error.message
+        });
+
+        // Si c'est une erreur 400 avec needsVerification
+        if (error.response?.status === 400 && error.response?.data?.needsVerification) {
+            return {
+                needsVerification: true,
+                message: error.response.data.message || "Un email de vérification vous a été envoyé."
+            };
         }
-        throw error;
+
+        // Pour les autres erreurs
+        throw new Error(error.response?.data?.error || 'Une erreur est survenue lors de la connexion');
     }
 }
 

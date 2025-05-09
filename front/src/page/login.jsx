@@ -21,15 +21,15 @@ const LoginPage = () => {
     onSuccess: (data) => {
       console.log("Données de réponse:", data);
       
+      // Si l'utilisateur n'est pas vérifié, afficher le message mais ne pas le connecter
+      if (data.needsVerification) {
+        setVerificationMessage(data.message);
+        return;
+      }
+      
       // Vérifier que les données utilisateur existent
       if (!data.user) {
         console.error("Données utilisateur manquantes dans la réponse");
-        return;
-      }
-
-      // Si l'utilisateur n'est pas vérifié, afficher le message mais ne pas le connecter
-      if (data.needsVerification) {
-        setVerificationMessage("Un email vous a été envoyé pour confirmer votre adresse email.");
         return;
       }
       
@@ -46,14 +46,9 @@ const LoginPage = () => {
       }
     },
     onError: (error) => {
-      // Gérer spécifiquement l'erreur de vérification d'email
-      if (error.response?.data?.error === 'Veuillez vérifier votre email avant de vous connecter') {
-        setVerificationMessage("Un email vous a été envoyé pour confirmer votre adresse email.");
-      } else {
-        console.error("Erreur de connexion:", error);
-        // Appeler la fonction setServerErrors du LoginForm
-        loginFormRef.current?.setServerErrors(error);
-      }
+      console.error("Erreur de connexion:", error);
+      // Appeler la fonction setServerErrors du LoginForm
+      loginFormRef.current?.setServerErrors(error);
     }
   })
 

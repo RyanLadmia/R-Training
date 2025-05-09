@@ -18,10 +18,15 @@ async function register(c) {
 async function login(c) {
     try {
         const { email, password } = c.req.valid('json')
-        const authResult = await authService.login(email, password)
+        const result = await authService.login(email, password)
+
+        // Si l'utilisateur doit vérifier son email
+        if (result.needsVerification) {
+            return c.json(result, 400)
+        }
 
         const cookieOptions = [
-            `accessToken=${authResult.token}`,
+            `accessToken=${result.token}`,
             'HttpOnly',
             'Secure',
             'SameSite=Strict',
@@ -33,10 +38,13 @@ async function login(c) {
 
         return c.json({ 
             message: 'Connexion réussie',
-            user: authResult.user
+            user: result.user
         })
     } catch (error) {
-        return c.json({ error: error.message}, 400)
+        console.error('Erreur de connexion:', error);
+        return c.json({ 
+            error: error.message || "Une erreur est survenue lors de la connexion"
+        }, 400)
     }
 }
 
