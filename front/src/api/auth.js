@@ -51,6 +51,9 @@ async function verifyEmail(token) {
         const response = await instance.get(`/verify-email/${token}`);
         return response.data;
     } catch (error) {
+        if (error.response?.status === 404) {
+            throw new Error('Utilisateur non trouvé');
+        }
         throw error;
     }
 }
@@ -60,7 +63,13 @@ async function forgotPassword(email) {
         const response = await instance.post('/forgot-password', { email });
         return response.data;
     } catch (error) {
-        throw error;
+        if (!error.response) {
+            throw new Error('Erreur de connexion au serveur');
+        }
+        if (error.response?.data?.error) {
+            throw new Error(error.response.data.error);
+        }
+        throw new Error('Une erreur est survenue lors de la réinitialisation du mot de passe');
     }
 }
 
@@ -82,7 +91,26 @@ async function resendVerificationEmail(email) {
         const response = await instance.post('/resend-verification', { email });
         return response.data;
     } catch (error) {
-        throw error;
+        console.log('Détails de l\'erreur:', {
+            status: error.response?.status,
+            data: error.response?.data,
+            message: error.message
+        });
+
+        if (!error.response) {
+            throw new Error('Erreur de connexion au serveur');
+        }
+
+        // Gestion spécifique des erreurs
+        switch (error.response.status) {
+            case 404:
+                throw new Error('Utilisateur non trouvé');
+            case 400:
+                // Si l'email est invalide ou l'utilisateur n'existe pas
+                throw new Error('Utilisateur non trouvé');
+            default:
+                throw new Error('Une erreur est survenue lors de l\'envoi de l\'email');
+        }
     }
 }
 

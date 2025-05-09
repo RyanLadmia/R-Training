@@ -74,7 +74,9 @@ async function forgotPassword(c) {
             message: "Instructions de réinitialisation envoyées par email."
         })
     } catch (error) {
-        return c.json({ error: "Échec de la demande de réinitialisation."}, 400)
+        return c.json({ 
+            error: error.message || "Échec de la demande de réinitialisation."
+        }, 400)
     }
 }
 

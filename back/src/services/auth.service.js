@@ -185,8 +185,7 @@ async function forgotPassword(email) {
     });
 
     if (!user) {
-        // Pour des raisons de sécurité, on ne révèle pas si l'email existe ou non
-        return { message: 'Si un compte existe avec cet email, vous recevrez les instructions.' };
+        throw new Error('Aucun compte n\'existe avec cette adresse email');
     }
 
     const resetToken = generatePasswordResetToken(email);

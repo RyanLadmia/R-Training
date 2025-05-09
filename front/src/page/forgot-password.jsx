@@ -7,11 +7,13 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Link } from 'react-router-dom'
 import { forgotPassword } from '@/api/auth'
+import { useToast } from "@/components/ui/use-toast"
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('')
   const [isEmailSent, setIsEmailSent] = useState(false)
   const [error, setError] = useState('')
+  const { toast } = useToast()
 
   const forgotPasswordMutation = useMutation({
     mutationFn: async (email) => {
@@ -22,16 +24,28 @@ export default function ForgotPassword() {
       setError('')
     },
     onError: (error) => {
-      setError(error.response?.data?.error || 'Une erreur est survenue')
+      const errorMessage = error.response?.data?.error || "Une erreur est survenue"
+      setError(errorMessage)
+      toast({
+        title: "Erreur",
+        description: errorMessage,
+        variant: "destructive"
+      })
     },
   })
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!email) {
-      setError('Veuillez saisir votre adresse email')
+      setError("Veuillez saisir votre adresse email")
+      toast({
+        title: "Erreur",
+        description: "Veuillez saisir votre adresse email",
+        variant: "destructive"
+      })
       return
     }
+    setError('')
     forgotPasswordMutation.mutate(email)
   }
 
