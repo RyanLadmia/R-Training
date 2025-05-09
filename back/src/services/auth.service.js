@@ -338,6 +338,23 @@ async function getUserRole(userId) {
     }
 }
 
+// Obtenir les rôles d'un utilisateur
+async function getUserRoles(userId) {
+    try {
+        const userRoles = await prisma.userRole.findMany({
+            where: { userId: parseInt(userId) },
+            include: {
+                role: true
+            }
+        });
+
+        return userRoles.map(ur => ur.role.name);
+    } catch (error) {
+        console.error('Erreur lors de la récupération des rôles:', error);
+        throw new Error('Erreur lors de la récupération des rôles');
+    }
+}
+
 export default { 
     register, 
     login, 
@@ -347,5 +364,6 @@ export default {
     sendEmailVerification, 
     findUserByEmail, 
     verifyEmail,
-    getUserRole
+    getUserRole,
+    getUserRoles
 };

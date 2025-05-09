@@ -8,16 +8,18 @@ async function getAdminProfileById(c) {
         const userId = c.req.param('userId');
         console.log('Récupération du profil admin pour l\'utilisateur:', userId);
 
-        // Vérifier que l'utilisateur existe et est un admin
+        // Vérifier que l'utilisateur existe
         const user = await authService.getUserById(parseInt(userId));
         if (!user) {
             console.error("Utilisateur non trouvé", userId);
             return c.json({ error: "Utilisateur non trouvé" }, 404);
         }
         
-        // Vérifier le rôle de l'utilisateur
-        const userRole = await authService.getUserRole(parseInt(userId));
-        console.log("Rôle de l'utilisateur:", userRole);
+        // Vérifier les rôles de l'utilisateur
+        const userRoles = await authService.getUserRoles(parseInt(userId));
+        if (!userRoles.includes('admin')) {
+            return c.json({ error: "L'utilisateur n'est pas un administrateur" }, 403);
+        }
         
         // Formater la date de création
         const createdAt = user.createdAt ? formatDate(user.createdAt) : null;
@@ -28,8 +30,10 @@ async function getAdminProfileById(c) {
             firstname: user.firstname,
             lastname: user.lastname,
             email: user.email,
-            role: userRole,
-            createdAt: createdAt
+            role: 'admin',
+            createdAt: createdAt,
+            birthDate: user.birthDate ? formatDate(user.birthDate) : null,
+            phoneNumber: user.phoneNumber || null
         };
         
         console.log("Profil admin récupéré:", profile);

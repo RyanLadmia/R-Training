@@ -11,6 +11,7 @@ import {
     updateUser,
     deleteUser
 } from '../controllers/admin.controller.js'
+import authService from '../services/auth.service.js'
 
 const adminRoutes = new Hono()
 
@@ -45,10 +46,20 @@ const updateAdminProfileSchema = z.object({
 // Middleware pour vérifier le rôle admin
 const adminGuard = async (c, next) => {
     const user = c.get('user');
-    if (!user || user.role !== 'admin') {
+    if (!user) {
         return c.json({ error: 'Accès non autorisé' }, 403);
     }
-    await next();
+    
+    try {
+        const userRoles = await authService.getUserRoles(user.id);
+        if (!userRoles.includes('admin')) {
+            return c.json({ error: 'Accès non autorisé' }, 403);
+        }
+        await next();
+    } catch (error) {
+        console.error('Erreur lors de la vérification du rôle:', error);
+        return c.json({ error: 'Erreur lors de la vérification des autorisations' }, 500);
+    }
 }
 
 // Routes protégées par authentification et rôle admin
