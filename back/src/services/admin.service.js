@@ -2,7 +2,7 @@ import { prisma } from '../config/prisma.js';
 import { formatDate, formatDateTime } from '../utils/date.js';
 
 
-// Partie gestion du profil de l'admin :
+// Partie gestion des fonctions du profil de l'admin :
 
 // Récupérer le profil d'un admin par son ID
 async function getAdminProfile(userId) {
