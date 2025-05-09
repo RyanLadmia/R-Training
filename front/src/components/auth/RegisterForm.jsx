@@ -14,6 +14,7 @@ export default function RegisterForm({ onRegister, isPending }) {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [birthDate, setBirthDate] = useState('')
   const [phoneNumber, setPhoneNumber] = useState('')
+  const [isRegistered, setIsRegistered] = useState(false)
   const [errors, setErrors] = useState({
     firstname: '',
     lastname: '',
@@ -25,7 +26,7 @@ export default function RegisterForm({ onRegister, isPending }) {
     general: ''
   })
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
     
     // Réinitialiser les erreurs
@@ -97,8 +98,13 @@ export default function RegisterForm({ onRegister, isPending }) {
       phoneNumber: phoneNumber || undefined
     }
     
-    // Appeler la fonction de callback avec les données formatées
-    onRegister(formattedData);
+    try {
+      // Appeler la fonction de callback avec les données formatées
+      await onRegister(formattedData);
+      setIsRegistered(true);
+    } catch (error) {
+      setServerErrors(error);
+    }
   }
 
   // Fonction pour gérer les erreurs externes (du serveur)
@@ -130,6 +136,33 @@ export default function RegisterForm({ onRegister, isPending }) {
     }
     
     setErrors(newErrors);
+  }
+
+  if (isRegistered) {
+    return (
+      <Card className="w-full max-w-md bg-white">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold">Inscription réussie !</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="text-center space-y-4">
+            <p className="text-green-600">
+              Veuillez consulter vos emails pour confirmer votre adresse email.
+            </p>
+            <p className="text-gray-600">
+              Un email de confirmation a été envoyé à l'adresse {email}.
+            </p>
+          </div>
+        </CardContent>
+        <CardFooter className="flex justify-center">
+          <Link to="/auth/login">
+            <Button variant="outline">
+              Aller à la page de connexion
+            </Button>
+          </Link>
+        </CardFooter>
+      </Card>
+    )
   }
 
   return (

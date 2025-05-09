@@ -9,6 +9,7 @@ import {
     generatePasswordResetToken,
     verifyToken
 } from '../utils/jwt.js';
+import { sendPasswordResetEmail } from '../utils/email.js';
 
 // Enregistrer un nouvel utilisateur
 async function register(data) {
@@ -22,7 +23,7 @@ async function register(data) {
         });
 
         if (existingUser) {
-            throw new Error('User already exists');
+            throw new Error('Cette adresse email est déjà utilisée');
         }
 
         // Vérifier si le rôle existe
@@ -31,7 +32,7 @@ async function register(data) {
         });
 
         if (!userRole) {
-            throw new Error('Le rôle utilisateur n\'existe pas. Veuillez contacter l\'administrateur.');
+            throw new Error('Le rôle utilisateur n\'existe pas');
         }
 
         // Générer le token de vérification
@@ -82,7 +83,7 @@ async function register(data) {
                 birthDate: user.birthDate ? formatDate(user.birthDate) : null,
                 phoneNumber: user.phoneNumber
             },
-            message: "Inscription réussie. Veuillez vérifier votre email pour activer votre compte."
+            message: "Inscription réussie. Veuillez vérifier votre email."
         };
     } catch (error) {
         console.error("Service - Erreur lors de l'inscription:", error);
@@ -140,19 +141,20 @@ async function login(email, password) {
 // Vérifier l'email d'un utilisateur
 async function verifyEmail(token) {
     try {
+        console.log('Token reçu:', token);
+        
         // Vérifier le token et son type
         const decoded = verifyToken(token, 'email');
+        console.log('Token décodé:', decoded);
 
         // Trouver l'utilisateur avec l'email du token
         const user = await prisma.user.findUnique({
-            where: { 
-                email: decoded.email,
-                emailVerificationToken: token
-            }
+            where: { email: decoded.email }
         });
+        console.log('Utilisateur trouvé:', user);
 
         if (!user) {
-            throw new Error('Token de vérification invalide ou expiré');
+            throw new Error('Utilisateur non trouvé');
         }
 
         if (user.isVerified) {
@@ -160,17 +162,18 @@ async function verifyEmail(token) {
         }
 
         // Mettre à jour l'utilisateur
-        await prisma.user.update({
+        const updatedUser = await prisma.user.update({
             where: { id: user.id },
             data: { 
                 isVerified: true,
                 emailVerificationToken: null
             }
         });
+        console.log('Utilisateur mis à jour:', updatedUser);
 
         return { message: 'Email vérifié avec succès' };
     } catch (error) {
-        console.error('Erreur de vérification:', error);
+        console.error('Erreur détaillée de vérification:', error);
         throw new Error(error.message || 'Erreur lors de la vérification de l\'email');
     }
 }
@@ -182,19 +185,64 @@ async function forgotPassword(email) {
     });
 
     if (!user) {
-        throw new Error('Aucun compte associé à cet email');
+        // Pour des raisons de sécurité, on ne révèle pas si l'email existe ou non
+        return { message: 'Si un compte existe avec cet email, vous recevrez les instructions.' };
     }
 
     const resetToken = generatePasswordResetToken(email);
 
-    // Sauvegarder uniquement le token
+    // Sauvegarder le token
     await prisma.user.update({
         where: { id: user.id },
         data: { resetPasswordToken: resetToken }
     });
 
-    // TODO: Envoyer l'email avec le lien de réinitialisation
-    return { message: 'Instructions envoyées par email' };
+    try {
+        // Envoyer l'email avec le lien de réinitialisation
+        await sendPasswordResetEmail(email, resetToken);
+        
+        return { message: 'Instructions de réinitialisation envoyées.' };
+    } catch (error) {
+        console.error('Erreur lors de l\'envoi de l\'email de réinitialisation:', error);
+        throw new Error('Erreur lors de l\'envoi de l\'email de réinitialisation');
+    }
+}
+
+// Réinitialiser le mot de passe
+async function resetPassword(token, password) {
+    try {
+        // Vérifier le token et son type
+        const decoded = verifyToken(token, 'reset');
+        
+        // Trouver l'utilisateur avec l'email du token et le token de réinitialisation
+        const user = await prisma.user.findFirst({
+            where: { 
+                email: decoded.email,
+                resetPasswordToken: token
+            }
+        });
+
+        if (!user) {
+            throw new Error('Token de réinitialisation invalide ou expiré');
+        }
+
+        // Hacher le nouveau mot de passe
+        const hashedPassword = await hashPassword(password);
+
+        // Mettre à jour l'utilisateur
+        await prisma.user.update({
+            where: { id: user.id },
+            data: { 
+                password: hashedPassword,
+                resetPasswordToken: null // Invalider le token après utilisation
+            }
+        });
+
+        return { message: 'Mot de passe réinitialisé avec succès' };
+    } catch (error) {
+        console.error('Erreur lors de la réinitialisation du mot de passe:', error);
+        throw new Error(error.message || 'Erreur lors de la réinitialisation du mot de passe');
+    }
 }
 
 // Récupérer un utilisateur par son id
@@ -204,55 +252,38 @@ async function getUserById(id) {
     });
 }
 
-// Récupérer le profile d'un utilisateur
-async function getUserProfile(id) {
-    const user = await prisma.user.findUnique({
-        where: { id },
-        select: {
-            id: true,
-            firstname: true,
-            lastname: true,
-            email: true,
-            birthDate: true,
-            phoneNumber: true,
-            createdAt: true,
-            updatedAt: true
-        }
-    });
-
-    if (!user) return null;
-
-    return {
-        ...user,
-        birthDate: user.birthDate ? formatDate(user.birthDate) : null,
-        createdAt: formatDateTime(user.createdAt),
-        updatedAt: formatDateTime(user.updatedAt)
-    };
-}
-
-// Modifier le profile d'un utilisateur
-async function updateUser(id, data) {
-    return await prisma.user.update({
-        where: { id },
-        data
-    });
-}
-
 // Envoyer un email de vérification
 async function sendEmailVerification(email) {
-    // Vérifier si l'utilisateur existe
-    const user = await findUserByEmail(email);
-    if (!user) {
-        throw new Error('Utilisateur non trouvé');
+    try {
+        // Vérifier si l'utilisateur existe
+        const user = await findUserByEmail(email);
+        if (!user) {
+            throw new Error('Utilisateur non trouvé');
+        }
+
+        if (user.isVerified) {
+            throw new Error('Cet email est déjà vérifié');
+        }
+        
+        const token = generateEmailVerificationToken(email);
+
+        // Mettre à jour l'utilisateur avec le nouveau token
+        await prisma.user.update({
+            where: { id: user.id },
+            data: { emailVerificationToken: token }
+        });
+        
+        // Envoyer l'email de vérification avec le token
+        await sendVerificationEmailUtil(email, token);
+        
+        return { 
+            message: 'Un nouveau lien de vérification a été envoyé à votre adresse email',
+            success: true
+        };
+    } catch (error) {
+        console.error('Erreur lors de l\'envoi de l\'email de vérification:', error);
+        throw new Error(error.message || 'Erreur lors de l\'envoi de l\'email de vérification');
     }
-    
-    const token = generateEmailVerificationToken(email);
-    const verificationLink = `${env.APP_URL}/verify-email?token=${token}`;
-    
-    // Envoyer l'email de vérification
-    await sendVerificationEmailUtil(email);
-    
-    return { message: 'Email de vérification envoyé' };
 }
 
 // Trouver un utilisateur par son email
@@ -276,14 +307,13 @@ async function getUserRole(userId) {
             }
         });
 
-        if (!userWithRole || !userWithRole.role || !userWithRole.role.role) {
-            return 'user'; // Rôle par défaut
+        if (!userWithRole?.role?.role) {
+            return 'user';
         }
 
         return userWithRole.role.role.name;
     } catch (error) {
-        console.error("Erreur lors de la récupération du rôle:", error);
-        return 'user'; // Rôle par défaut en cas d'erreur
+        return 'user';
     }
 }
 
@@ -291,9 +321,8 @@ export default {
     register, 
     login, 
     forgotPassword, 
-    getUserById, 
-    getUserProfile, 
-    updateUser, 
+    resetPassword,
+    getUserById,
     sendEmailVerification, 
     findUserByEmail, 
     verifyEmail,

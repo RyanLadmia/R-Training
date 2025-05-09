@@ -4,8 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { Card } from '../../components/ui/card';
 import { useQuery } from '@tanstack/react-query';
 import { get_profile_user_by_id, update_profile } from '../../api/admin';
+import { useAuth } from '../../contexts/authContext';
 
 const AdminProfile = () => {
+  const { user } = useAuth();
   const [profile, setProfile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -18,8 +20,8 @@ const AdminProfile = () => {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['adminProfile'],
-    queryFn: () => get_profile_user_by_id(localStorage.getItem('userId')),
-    enabled: !!localStorage.getItem('userId'),
+    queryFn: () => get_profile_user_by_id(user?.id),
+    enabled: !!user?.id,
   });
 
   useEffect(() => {

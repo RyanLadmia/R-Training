@@ -9,12 +9,11 @@ import { useAuth } from '@/contexts/authContext';
 
 const UserProfile = () => {
   const { user } = useAuth();
-  const userId = localStorage.getItem('userId');
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['userProfile'],
-    queryFn: () => get_profile_user_by_id(userId),
-    enabled: !!userId,
+    queryFn: () => get_profile_user_by_id(user?.id),
+    enabled: !!user?.id,
   });
 
   if (isLoading) {

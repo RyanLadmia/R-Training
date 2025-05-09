@@ -4,13 +4,15 @@
 import { useAuth } from '@/contexts/authContext'
 import { Button } from '@/components/ui/button'
 import { Flag, LogOut } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 export default function Header() {
   const { isAuthenticated, logout: authLogout } = useAuth()
+  const navigate = useNavigate()
   
-  const handleLogout = () => {
-    authLogout()
-    window.location = "/"
+  const handleLogout = async () => {
+    await authLogout()
+    navigate('/')
   }
 
   return (

@@ -1,22 +1,25 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { verifyEmail } from '@/api/auth'
+import { verifyEmail, resendVerificationEmail } from '@/api/auth'
 import { useMutation } from '@tanstack/react-query'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { useToast } from '@/components/ui/use-toast'
 
 export default function VerifyEmail() {
   const { token } = useParams()
   const navigate = useNavigate()
   const [error, setError] = useState('')
+  const [email, setEmail] = useState('')
+  const { toast } = useToast()
 
   const verifyEmailMutation = useMutation({
     mutationFn: async () => {
       return await verifyEmail(token)
     },
     onSuccess: () => {
-      // Redirection vers la page de connexion après 3 secondes
       setTimeout(() => {
         navigate('/auth/login')
       }, 3000)
@@ -26,11 +29,45 @@ export default function VerifyEmail() {
     }
   })
 
+  const resendEmailMutation = useMutation({
+    mutationFn: async () => {
+      return await resendVerificationEmail(email)
+    },
+    onSuccess: () => {
+      toast({
+        title: "Email envoyé",
+        description: "Un nouveau lien de vérification a été envoyé à votre adresse email.",
+        variant: "success"
+      })
+      setEmail('')
+    },
+    onError: (error) => {
+      toast({
+        title: "Erreur",
+        description: error.response?.data?.error || "Une erreur est survenue lors de l'envoi de l'email",
+        variant: "destructive"
+      })
+    }
+  })
+
   useEffect(() => {
     if (token) {
       verifyEmailMutation.mutate()
     }
   }, [token])
+
+  const handleResendEmail = (e) => {
+    e.preventDefault()
+    if (!email) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez entrer votre adresse email",
+        variant: "destructive"
+      })
+      return
+    }
+    resendEmailMutation.mutate()
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -69,6 +106,34 @@ export default function VerifyEmail() {
           {verifyEmailMutation.isError && (
             <div className="text-center space-y-4">
               <p className="text-red-600">{error}</p>
+              <form onSubmit={handleResendEmail} className="space-y-4">
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-600">
+                    Si vous n'avez pas reçu le lien ou s'il a expiré, vous pouvez en demander un nouveau :
+                  </p>
+                  <Input
+                    type="email"
+                    placeholder="Entrez votre adresse email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={resendEmailMutation.isPending}
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={resendEmailMutation.isPending}
+                >
+                  {resendEmailMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Envoi en cours...
+                    </>
+                  ) : (
+                    "Renvoyer le lien de vérification"
+                  )}
+                </Button>
+              </form>
               <Button
                 onClick={() => navigate('/auth/login')}
                 variant="outline"

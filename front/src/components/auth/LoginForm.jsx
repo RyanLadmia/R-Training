@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, forwardRef, useImperativeHandle } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Link } from 'react-router-dom'
 
-export default function LoginForm({ onLogin, isPending }) {
+const LoginForm = forwardRef(({ onLogin, isPending }, ref) => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [errors, setErrors] = useState({
@@ -14,6 +14,34 @@ export default function LoginForm({ onLogin, isPending }) {
     password: '',
     general: ''
   })
+
+  // Exposer la fonction setServerErrors via la référence
+  useImperativeHandle(ref, () => ({
+    setServerErrors: (error) => {
+      const newErrors = { ...errors }
+      
+      // Réinitialiser les erreurs
+      Object.keys(newErrors).forEach(key => newErrors[key] = '')
+      
+      if (error.response?.data?.error) {
+        // Selon le message d'erreur, on peut le diriger vers le bon champ
+        const errorMessage = error.response.data.error;
+        
+        if (errorMessage.includes('Email ou mot de passe incorrect')) {
+          newErrors.general = 'Email ou mot de passe incorrect';
+        } else if (errorMessage.includes('Veuillez vérifier votre email')) {
+          newErrors.general = 'Veuillez vérifier votre email avant de vous connecter';
+        } else {
+          newErrors.general = errorMessage;
+        }
+      } else {
+        // Erreur générique
+        newErrors.general = 'Une erreur est survenue lors de la connexion';
+      }
+      
+      setErrors(newErrors);
+    }
+  }));
 
   const handleSubmit = (event) => {
     event.preventDefault()
@@ -53,32 +81,6 @@ export default function LoginForm({ onLogin, isPending }) {
     
     // Appeler la fonction de callback avec les données formatées
     onLogin(loginData)
-  }
-
-  // Fonction pour gérer les erreurs externes (du serveur)
-  const setServerErrors = (error) => {
-    const newErrors = { ...errors }
-    
-    // Réinitialiser les erreurs
-    Object.keys(newErrors).forEach(key => newErrors[key] = '')
-    
-    if (error.response?.data?.error) {
-      // Selon le message d'erreur, on peut le diriger vers le bon champ
-      const errorMessage = error.response.data.error;
-      
-      if (errorMessage.includes('Email ou mot de passe incorrect')) {
-        newErrors.general = 'Email ou mot de passe incorrect';
-      } else if (errorMessage.includes('Veuillez vérifier votre email')) {
-        newErrors.general = 'Veuillez vérifier votre email avant de vous connecter';
-      } else {
-        newErrors.general = errorMessage;
-      }
-    } else {
-      // Erreur générique
-      newErrors.general = 'Une erreur est survenue lors de la connexion';
-    }
-    
-    setErrors(newErrors);
   }
 
   return (
@@ -158,4 +160,8 @@ export default function LoginForm({ onLogin, isPending }) {
       </form>
     </Card>
   )
-}
+})
+
+LoginForm.displayName = "LoginForm"
+
+export default LoginForm
