@@ -1,5 +1,7 @@
 import { prisma } from '../config/prisma.js';
 import { formatDate, formatDateTime } from '../utils/date.js';
+import storageService from './storage.service.js';
+import { toInternationalPhoneNumber } from '../utils/phoneNumber.js';
 
 
 // Partie gestion des fonctions du profil de l'admin :
@@ -127,9 +129,19 @@ async function updateUser(userId, userData) {
             lastname: userData.lastname,
             email: userData.email,
             birthDate: userData.birthDate ? new Date(userData.birthDate) : null,
-            phoneNumber: userData.phoneNumber,
+            phoneNumber: userData.phoneNumber ? toInternationalPhoneNumber(userData.phoneNumber) : null,
             isActive: userData.isActive
         };
+
+        // Gérer la photo de profil si elle est fournie
+        if (userData.profilePicture) {
+            // Supprimer l'ancienne photo si elle existe
+            await storageService.deleteProfilePicture(userId);
+            
+            // Sauvegarder la nouvelle photo
+            const profilePicturePath = await storageService.saveProfilePicture(userData.profilePicture, userId);
+            updateData.profilePicture = profilePicturePath;
+        }
 
         // Si le rôle doit être modifié
         if (userData.role) {
@@ -176,7 +188,8 @@ async function updateUser(userId, userData) {
             role: updatedUser.role?.role?.name || 'user',
             createdAt: formatDateTime(updatedUser.createdAt),
             updatedAt: formatDateTime(updatedUser.updatedAt),
-            birthDate: updatedUser.birthDate ? formatDate(updatedUser.birthDate) : null
+            birthDate: updatedUser.birthDate ? formatDate(updatedUser.birthDate) : null,
+            phoneNumber: updatedUser.phoneNumber ? toLocalPhoneNumber(updatedUser.phoneNumber) : null
         };
     } catch (error) {
         console.error('Erreur lors de la mise à jour de l\'utilisateur:', error);

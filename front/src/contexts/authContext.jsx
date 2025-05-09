@@ -8,10 +8,35 @@ export const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
 export function AuthProvider({ children }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
-  const [userRole, setUserRole] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    const storedAuth = localStorage.getItem('isAuthenticated');
+    return storedAuth === 'true';
+  });
+  
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem('user');
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
+  
+  const [userRole, setUserRole] = useState(() => {
+    const storedRole = localStorage.getItem('userRole');
+    return storedRole || null;
+  });
+  
   const [loading, setLoading] = useState(false);
+
+  // Effet pour sauvegarder les données d'authentification
+  useEffect(() => {
+    if (isAuthenticated) {
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('userRole', userRole);
+    } else {
+      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('user');
+      localStorage.removeItem('userRole');
+    }
+  }, [isAuthenticated, user, userRole]);
   
   // Fonction de connexion
   const login = async (userData) => {
@@ -38,6 +63,7 @@ export function AuthProvider({ children }) {
       setIsAuthenticated(false);
       setUser(null);
       setUserRole(null);
+      localStorage.clear(); // Nettoyer le localStorage
       window.dispatchEvent(new Event('authChange'));
     }
   };

@@ -30,11 +30,11 @@ async function login(c) {
         const cookieOptions = [
             `accessToken=${result.token}`,
             'HttpOnly',
-            'Secure',
-            'SameSite=Strict',
-            `Max-Age=${60 * 60}`,
+            process.env.NODE_ENV === 'production' ? 'Secure' : '',
+            'SameSite=Lax',
+            `Max-Age=${60 * 60 * 24 * 7}`, // 7 jours
             'Path=/',
-        ].join('; ');
+        ].filter(Boolean).join('; ');
 
         c.header('Set-Cookie', cookieOptions);
 
@@ -56,11 +56,11 @@ async function logout(c) {
         const cookieOptions = [
             'accessToken=',
             'HttpOnly',
-            'Secure',
-            'SameSite=Strict',
+            process.env.NODE_ENV === 'production' ? 'Secure' : '',
+            'SameSite=Lax',
             'Max-Age=0',
             'Path=/'
-        ].join('; ');
+        ].filter(Boolean).join('; ');
 
         c.header('Set-Cookie', cookieOptions);
         
